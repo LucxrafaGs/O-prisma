@@ -1,0 +1,650 @@
+fileFormatVersion: 2
+guid: 3aad48b2cf8d00649a77808d89b9fe2c
+TextureImporter:
+  internalIDToNameTable:
+  - first:
+      213: 8305769719724133516
+    second: aro_comn_v03_0
+  - first:
+      213: 7314207750281056693
+    second: aro_comn_v03_1
+  - first:
+      213: 8149907053973074552
+    second: aro_comn_v03_2
+  - first:
+      213: -4990088879850374071
+    second: aro_comn_v03_3
+  - first:
+      213: -4611478338331908870
+    second: aro_comn_v03_4
+  - first:
+      213: 1133329742533719456
+    second: aro_comn_v03_5
+  - first:
+      213: -7206960754131521403
+    second: aro_comn_v03_6
+  - first:
+      213: -8300874878011419718
+    second: aro_comn_v03_7
+  - first:
+      213: 1356980089209804194
+    second: aro_comn_v03_8
+  - first:
+      213: -6353599207850712267
+    second: aro_comn_v03_9
+  - first:
+      213: -8918930213471036123
+    second: aro_comn_v03_10
+  - first:
+      213: 1272381752702732125
+    second: aro_comn_v03_11
+  - first:
+      213: 5304223486739534297
+    second: aro_comn_v03_12
+  - first:
+      213: -21122953841171671
+    second: aro_comn_v03_13
+  - first:
+      213: -8536910832780093654
+    second: aro_comn_v03_14
+  - first:
+      213: 8265339471717534603
+    second: aro_comn_v03_15
+  - first:
+      213: -1127793515956842043
+    second: aro_comn_v03_16
+  - first:
+      213: -8916463995305352230
+    second: aro_comn_v03_17
+  - first:
+      213: 2391377539298881072
+    second: aro_comn_v03_18
+  - first:
+      213: -717409235623310068
+    second: aro_comn_v03_19
+  externalObjects: {}
+  serializedVersion: 13
+  mipmaps:
+    mipMapMode: 0
+    enableMipMap: 0
+    sRGBTexture: 1
+    linearTexture: 0
+    fadeOut: 0
+    borderMipMap: 0
+    mipMapsPreserveCoverage: 0
+    alphaTestReferenceValue: 0.5
+    mipMapFadeDistanceStart: 1
+    mipMapFadeDistanceEnd: 3
+  bumpmap:
+    convertToNormalMap: 0
+    externalNormalMap: 0
+    heightScale: 0.25
+    normalMapFilter: 0
+    flipGreenChannel: 0
+  isReadable: 0
+  streamingMipmaps: 0
+  streamingMipmapsPriority: 0
+  vTOnly: 0
+  ignoreMipmapLimit: 0
+  grayScaleToAlpha: 0
+  generateCubemap: 6
+  cubemapConvolution: 0
+  seamlessCubemap: 0
+  textureFormat: 1
+  maxTextureSize: 2048
+  textureSettings:
+    serializedVersion: 2
+    filterMode: 1
+    aniso: 1
+    mipBias: 0
+    wrapU: 1
+    wrapV: 1
+    wrapW: 1
+  nPOTScale: 0
+  lightmap: 0
+  compressionQuality: 50
+  spriteMode: 2
+  spriteExtrude: 1
+  spriteMeshType: 1
+  alignment: 0
+  spritePivot: {x: 0.5, y: 0.5}
+  spritePixelsToUnits: 100
+  spriteBorder: {x: 0, y: 0, z: 0, w: 0}
+  spriteGenerateFallbackPhysicsShape: 1
+  alphaUsage: 1
+  alphaIsTransparency: 1
+  spriteTessellationDetail: -1
+  textureType: 8
+  textureShape: 1
+  singleChannelComponent: 0
+  flipbookRows: 1
+  flipbookColumns: 1
+  maxTextureSizeSet: 0
+  compressionQualitySet: 0
+  textureFormatSet: 0
+  ignorePngGamma: 0
+  applyGammaDecoding: 0
+  swizzle: 50462976
+  cookieLightType: 0
+  platformSettings:
+  - serializedVersion: 4
+    buildTarget: DefaultTexturePlatform
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: Standalone
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: WebGL
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  spriteSheet:
+    serializedVersion: 2
+    sprites:
+    - serializedVersion: 2
+      name: aro_comn_v03_0
+      rect:
+        serializedVersion: 2
+        x: 1
+        y: 49
+        width: 14
+        height: 14
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: c8c4a52ed85044370800000000000000
+      internalID: 8305769719724133516
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: aro_comn_v03_1
+      rect:
+        serializedVersion: 2
+        x: 17
+        y: 33
+        width: 14
+        height: 25
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 5b159e05239418560800000000000000
+      internalID: 7314207750281056693
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: aro_comn_v03_2
+      rect:
+        serializedVersion: 2
+        x: 36
+        y: 50
+        width: 7
+        height: 12
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 872f38819494a1170800000000000000
+      internalID: 8149907053973074552
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: aro_comn_v03_3
+      rect:
+        serializedVersion: 2
+        x: 52
+        y: 50
+        width: 7
+        height: 12
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 94c34e63a94afbab0800000000000000
+      internalID: -4990088879850374071
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: aro_comn_v03_4
+      rect:
+        serializedVersion: 2
+        x: 69
+        y: 50
+        width: 7
+        height: 13
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: af4615a42ecb000c0800000000000000
+      internalID: -4611478338331908870
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: aro_comn_v03_5
+      rect:
+        serializedVersion: 2
+        x: 85
+        y: 49
+        width: 7
+        height: 15
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 0a57b1d65656abf00800000000000000
+      internalID: 1133329742533719456
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: aro_comn_v03_6
+      rect:
+        serializedVersion: 2
+        x: 98
+        y: 32
+        width: 12
+        height: 32
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 5803fc3d06bbbfb90800000000000000
+      internalID: -7206960754131521403
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: aro_comn_v03_7
+      rect:
+        serializedVersion: 2
+        x: 115
+        y: 49
+        width: 9
+        height: 12
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: ab35a23474e5dcc80800000000000000
+      internalID: -8300874878011419718
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: aro_comn_v03_8
+      rect:
+        serializedVersion: 2
+        x: 2
+        y: 31
+        width: 12
+        height: 17
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 2a5d0a89336f4d210800000000000000
+      internalID: 1356980089209804194
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: aro_comn_v03_9
+      rect:
+        serializedVersion: 2
+        x: 32
+        y: 34
+        width: 33
+        height: 12
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 533eadaee2b73d7a0800000000000000
+      internalID: -6353599207850712267
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: aro_comn_v03_10
+      rect:
+        serializedVersion: 2
+        x: 64
+        y: 34
+        width: 17
+        height: 12
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 52d5f81b938993480800000000000000
+      internalID: -8918930213471036123
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: aro_comn_v03_11
+      rect:
+        serializedVersion: 2
+        x: 81
+        y: 33
+        width: 14
+        height: 14
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: d570984767868a110800000000000000
+      internalID: 1272381752702732125
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: aro_comn_v03_12
+      rect:
+        serializedVersion: 2
+        x: 115
+        y: 32
+        width: 12
+        height: 13
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 9d1d46088236c9940800000000000000
+      internalID: 5304223486739534297
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: aro_comn_v03_13
+      rect:
+        serializedVersion: 2
+        x: 1
+        y: 1
+        width: 14
+        height: 13
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 923a0bf09c4f4bff0800000000000000
+      internalID: -21122953841171671
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: aro_comn_v03_14
+      rect:
+        serializedVersion: 2
+        x: 33
+        y: 1
+        width: 14
+        height: 13
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: a2755fcf3dcc68980800000000000000
+      internalID: -8536910832780093654
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: aro_comn_v03_15
+      rect:
+        serializedVersion: 2
+        x: 51
+        y: 0
+        width: 12
+        height: 16
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: b8b0db7357264b270800000000000000
+      internalID: 8265339471717534603
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: aro_comn_v03_16
+      rect:
+        serializedVersion: 2
+        x: 68
+        y: 0
+        width: 10
+        height: 16
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 5c15765c5c54950f0800000000000000
+      internalID: -1127793515956842043
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: aro_comn_v03_17
+      rect:
+        serializedVersion: 2
+        x: 81
+        y: 1
+        width: 14
+        height: 13
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: ad3a34bdc3b524480800000000000000
+      internalID: -8916463995305352230
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: aro_comn_v03_18
+      rect:
+        serializedVersion: 2
+        x: 96
+        y: 1
+        width: 16
+        height: 12
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 03ee1c1b331ef2120800000000000000
+      internalID: 2391377539298881072
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: aro_comn_v03_19
+      rect:
+        serializedVersion: 2
+        x: 112
+        y: 2
+        width: 16
+        height: 10
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: c0d8618e9104b06f0800000000000000
+      internalID: -717409235623310068
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    outline: []
+    customData: 
+    physicsShape: []
+    bones: []
+    spriteID: 
+    internalID: 0
+    vertices: []
+    indices: 
+    edges: []
+    weights: []
+    secondaryTextures: []
+    spriteCustomMetadata:
+      entries: []
+    nameFileIdTable:
+      aro_comn_v03_0: 8305769719724133516
+      aro_comn_v03_1: 7314207750281056693
+      aro_comn_v03_10: -8918930213471036123
+      aro_comn_v03_11: 1272381752702732125
+      aro_comn_v03_12: 5304223486739534297
+      aro_comn_v03_13: -21122953841171671
+      aro_comn_v03_14: -8536910832780093654
+      aro_comn_v03_15: 8265339471717534603
+      aro_comn_v03_16: -1127793515956842043
+      aro_comn_v03_17: -8916463995305352230
+      aro_comn_v03_18: 2391377539298881072
+      aro_comn_v03_19: -717409235623310068
+      aro_comn_v03_2: 8149907053973074552
+      aro_comn_v03_3: -4990088879850374071
+      aro_comn_v03_4: -4611478338331908870
+      aro_comn_v03_5: 1133329742533719456
+      aro_comn_v03_6: -7206960754131521403
+      aro_comn_v03_7: -8300874878011419718
+      aro_comn_v03_8: 1356980089209804194
+      aro_comn_v03_9: -6353599207850712267
+  mipmapLimitGroupName: 
+  pSDRemoveMatte: 0
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

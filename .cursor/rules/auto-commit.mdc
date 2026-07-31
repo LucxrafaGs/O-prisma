@@ -1,0 +1,15 @@
+---
+description: Sempre commitar e fazer push após alterações no Prisma
+alwaysApply: true
+---
+
+# Auto-commit no Prisma
+
+Sempre que o agente concluir alterações no projeto do jogo Prisma:
+
+1. **Commitar automaticamente** as mudanças relevantes (código, assets, cenas, configs) com mensagem clara em português ou inglês curto focando no *porquê*.
+2. **Fazer push** para `origin` (`https://github.com/LucxrafaGs/O-prisma.git`) após o commit, para não perder nada.
+3. Usar o Git em `"C:\Program Files\Git\bin\git.exe"` se `git` não estiver no PATH.
+4. **Não** commitar: `Library/`, `Temp/`, `Logs/`, `UserSettings/`, secrets (`.env`, credentials), builds.
+5. Seguir o protocolo de commit do usuário (status + diff + log em paralelo; mensagem via heredoc/equivalente; nunca `--force` em main sem pedido explícito; nunca alterar git config).
+6. Se o push falhar por autenticação, avisar o usuário claramente com o comando que falta.

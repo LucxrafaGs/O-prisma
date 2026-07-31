@@ -1,0 +1,1066 @@
+fileFormatVersion: 2
+guid: 0499c70c9a686f845a6def47216611d9
+TextureImporter:
+  internalIDToNameTable:
+  - first:
+      213: -2560881229006624147
+    second: base effects_0
+  - first:
+      213: 418631993258490229
+    second: base effects_1
+  - first:
+      213: 5358260981728427902
+    second: base effects_2
+  - first:
+      213: -1030670995733177005
+    second: base effects_3
+  - first:
+      213: 8380609605182675989
+    second: base effects_4
+  - first:
+      213: 3517372474530651525
+    second: base effects_5
+  - first:
+      213: 7825188741394244814
+    second: base effects_6
+  - first:
+      213: -8489313962943586683
+    second: base effects_7
+  - first:
+      213: -1518650449856924039
+    second: base effects_8
+  - first:
+      213: -4713358627239836769
+    second: base effects_9
+  - first:
+      213: -1039573553976575905
+    second: base effects_10
+  - first:
+      213: -7156824022406839204
+    second: base effects_11
+  - first:
+      213: 9196721467572357888
+    second: base effects_12
+  - first:
+      213: -8272885844343145049
+    second: base effects_13
+  - first:
+      213: 4676367699899514510
+    second: base effects_14
+  - first:
+      213: 4267014358054431740
+    second: base effects_15
+  - first:
+      213: -3632903220524028158
+    second: base effects_16
+  - first:
+      213: 5629970021041566745
+    second: base effects_17
+  - first:
+      213: 1314687355841645844
+    second: base effects_18
+  - first:
+      213: 3409242424717745170
+    second: base effects_19
+  - first:
+      213: -1527049847600627397
+    second: base effects_20
+  - first:
+      213: 2584240642290394365
+    second: base effects_21
+  - first:
+      213: 8327303947458159467
+    second: base effects_22
+  - first:
+      213: 6392106179668681573
+    second: base effects_23
+  - first:
+      213: 8583298329940437394
+    second: base effects_24
+  - first:
+      213: -1301976721398802506
+    second: base effects_25
+  - first:
+      213: -8958885541799285266
+    second: base effects_26
+  - first:
+      213: 3295583353215140286
+    second: base effects_27
+  - first:
+      213: 3919837228297125220
+    second: base effects_28
+  - first:
+      213: 8885639913090566978
+    second: base effects_29
+  - first:
+      213: -674529280358724022
+    second: base effects_30
+  - first:
+      213: 6097828696214555894
+    second: base effects_31
+  - first:
+      213: -3411131243225523198
+    second: base effects_32
+  - first:
+      213: -7731567230215541399
+    second: base effects_33
+  externalObjects: {}
+  serializedVersion: 13
+  mipmaps:
+    mipMapMode: 0
+    enableMipMap: 0
+    sRGBTexture: 1
+    linearTexture: 0
+    fadeOut: 0
+    borderMipMap: 0
+    mipMapsPreserveCoverage: 0
+    alphaTestReferenceValue: 0.5
+    mipMapFadeDistanceStart: 1
+    mipMapFadeDistanceEnd: 3
+  bumpmap:
+    convertToNormalMap: 0
+    externalNormalMap: 0
+    heightScale: 0.25
+    normalMapFilter: 0
+    flipGreenChannel: 0
+  isReadable: 0
+  streamingMipmaps: 0
+  streamingMipmapsPriority: 0
+  vTOnly: 0
+  ignoreMipmapLimit: 0
+  grayScaleToAlpha: 0
+  generateCubemap: 6
+  cubemapConvolution: 0
+  seamlessCubemap: 0
+  textureFormat: 1
+  maxTextureSize: 2048
+  textureSettings:
+    serializedVersion: 2
+    filterMode: 0
+    aniso: 1
+    mipBias: 0
+    wrapU: 1
+    wrapV: 1
+    wrapW: 1
+  nPOTScale: 0
+  lightmap: 0
+  compressionQuality: 50
+  spriteMode: 2
+  spriteExtrude: 1
+  spriteMeshType: 1
+  alignment: 0
+  spritePivot: {x: 0.5, y: 0.5}
+  spritePixelsToUnits: 64
+  spriteBorder: {x: 0, y: 0, z: 0, w: 0}
+  spriteGenerateFallbackPhysicsShape: 1
+  alphaUsage: 1
+  alphaIsTransparency: 1
+  spriteTessellationDetail: -1
+  textureType: 8
+  textureShape: 1
+  singleChannelComponent: 0
+  flipbookRows: 1
+  flipbookColumns: 1
+  maxTextureSizeSet: 0
+  compressionQualitySet: 0
+  textureFormatSet: 0
+  ignorePngGamma: 0
+  applyGammaDecoding: 0
+  swizzle: 50462976
+  cookieLightType: 0
+  platformSettings:
+  - serializedVersion: 4
+    buildTarget: DefaultTexturePlatform
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 0
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: Standalone
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 0
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 1
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: WebGL
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 0
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 1
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: Android
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 0
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 1
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: iOS
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 0
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 1
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: VisionOS
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 0
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: WindowsStoreApps
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 0
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  spriteSheet:
+    serializedVersion: 2
+    sprites:
+    - serializedVersion: 2
+      name: base effects_0
+      rect:
+        serializedVersion: 2
+        x: 6
+        y: 231
+        width: 22
+        height: 16
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: d6a2811271ce57cd0800000000000000
+      internalID: -2560881229006624147
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: base effects_1
+      rect:
+        serializedVersion: 2
+        x: 39
+        y: 232
+        width: 19
+        height: 15
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 57939c174974fc500800000000000000
+      internalID: 418631993258490229
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: base effects_2
+      rect:
+        serializedVersion: 2
+        x: 72
+        y: 233
+        width: 17
+        height: 14
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: e7f32cd39fd5c5a40800000000000000
+      internalID: 5358260981728427902
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: base effects_3
+      rect:
+        serializedVersion: 2
+        x: 97
+        y: 244
+        width: 13
+        height: 6
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 35d960ba03252b1f0800000000000000
+      internalID: -1030670995733177005
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: base effects_4
+      rect:
+        serializedVersion: 2
+        x: 113
+        y: 244
+        width: 15
+        height: 6
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 51cd3269808ed4470800000000000000
+      internalID: 8380609605182675989
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: base effects_5
+      rect:
+        serializedVersion: 2
+        x: 130
+        y: 241
+        width: 13
+        height: 13
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 58dd22731a730d030800000000000000
+      internalID: 3517372474530651525
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: base effects_6
+      rect:
+        serializedVersion: 2
+        x: 144
+        y: 240
+        width: 16
+        height: 16
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: ec4a03f53b7a89c60800000000000000
+      internalID: 7825188741394244814
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: base effects_7
+      rect:
+        serializedVersion: 2
+        x: 163
+        y: 241
+        width: 24
+        height: 15
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 58edbf3dde5ef2a80800000000000000
+      internalID: -8489313962943586683
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: base effects_8
+      rect:
+        serializedVersion: 2
+        x: 103
+        y: 225
+        width: 18
+        height: 16
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 9767a46467baceae0800000000000000
+      internalID: -1518650449856924039
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: base effects_9
+      rect:
+        serializedVersion: 2
+        x: 129
+        y: 223
+        width: 13
+        height: 18
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: f93c85c0d49c69eb0800000000000000
+      internalID: -4713358627239836769
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: base effects_10
+      rect:
+        serializedVersion: 2
+        x: 144
+        y: 225
+        width: 17
+        height: 15
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: f58f55d4c51b291f0800000000000000
+      internalID: -1039573553976575905
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: base effects_11
+      rect:
+        serializedVersion: 2
+        x: 9
+        y: 204
+        width: 14
+        height: 10
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: c544578587addac90800000000000000
+      internalID: -7156824022406839204
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: base effects_12
+      rect:
+        serializedVersion: 2
+        x: 42
+        y: 204
+        width: 12
+        height: 10
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 00b0cdcc27151af70800000000000000
+      internalID: 9196721467572357888
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: base effects_13
+      rect:
+        serializedVersion: 2
+        x: 72
+        y: 201
+        width: 17
+        height: 22
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 7adb19cf72ec03d80800000000000000
+      internalID: -8272885844343145049
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: base effects_14
+      rect:
+        serializedVersion: 2
+        x: 111
+        y: 177
+        width: 17
+        height: 40
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: e8efe9785abc5e040800000000000000
+      internalID: 4676367699899514510
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: base effects_15
+      rect:
+        serializedVersion: 2
+        x: 130
+        y: 209
+        width: 11
+        height: 13
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: cfb635773fa773b30800000000000000
+      internalID: 4267014358054431740
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: base effects_16
+      rect:
+        serializedVersion: 2
+        x: 145
+        y: 209
+        width: 12
+        height: 12
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 20fea45d4c5559dc0800000000000000
+      internalID: -3632903220524028158
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: base effects_17
+      rect:
+        serializedVersion: 2
+        x: 9
+        y: 164
+        width: 24
+        height: 27
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 914f740c7eba12e40800000000000000
+      internalID: 5629970021041566745
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: base effects_18
+      rect:
+        serializedVersion: 2
+        x: 38
+        y: 174
+        width: 19
+        height: 18
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 41d83a34f25be3210800000000000000
+      internalID: 1314687355841645844
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: base effects_19
+      rect:
+        serializedVersion: 2
+        x: 68
+        y: 171
+        width: 23
+        height: 20
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 21c1e7e1cef005f20800000000000000
+      internalID: 3409242424717745170
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: base effects_20
+      rect:
+        serializedVersion: 2
+        x: 102
+        y: 168
+        width: 8
+        height: 8
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: b3143771144decae0800000000000000
+      internalID: -1527049847600627397
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: base effects_21
+      rect:
+        serializedVersion: 2
+        x: 114
+        y: 168
+        width: 8
+        height: 8
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: df4a8d91c211dd320800000000000000
+      internalID: 2584240642290394365
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: base effects_22
+      rect:
+        serializedVersion: 2
+        x: 134
+        y: 174
+        width: 22
+        height: 31
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: b63a3fcf1d6809370800000000000000
+      internalID: 8327303947458159467
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: base effects_23
+      rect:
+        serializedVersion: 2
+        x: 153
+        y: 166
+        width: 8
+        height: 8
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 5632bbd14b255b850800000000000000
+      internalID: 6392106179668681573
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: base effects_24
+      rect:
+        serializedVersion: 2
+        x: 8
+        y: 130
+        width: 27
+        height: 19
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 299ad45da500e1770800000000000000
+      internalID: 8583298329940437394
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: base effects_25
+      rect:
+        serializedVersion: 2
+        x: 49
+        y: 134
+        width: 26
+        height: 14
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 6b7523fe1137eede0800000000000000
+      internalID: -1301976721398802506
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: base effects_26
+      rect:
+        serializedVersion: 2
+        x: 80
+        y: 133
+        width: 8
+        height: 28
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: eedaba1e015aba380800000000000000
+      internalID: -8958885541799285266
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: base effects_27
+      rect:
+        serializedVersion: 2
+        x: 104
+        y: 133
+        width: 8
+        height: 28
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: eb1441859934cbd20800000000000000
+      internalID: 3295583353215140286
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: base effects_28
+      rect:
+        serializedVersion: 2
+        x: 3
+        y: 86
+        width: 40
+        height: 40
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 46d7002e03f066630800000000000000
+      internalID: 3919837228297125220
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: base effects_29
+      rect:
+        serializedVersion: 2
+        x: 49
+        y: 78
+        width: 18
+        height: 12
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 24bcbcd3c62205b70800000000000000
+      internalID: 8885639913090566978
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: base effects_30
+      rect:
+        serializedVersion: 2
+        x: 53
+        y: 104
+        width: 26
+        height: 14
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: a4e4e9d713793a6f0800000000000000
+      internalID: -674529280358724022
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: base effects_31
+      rect:
+        serializedVersion: 2
+        x: 81
+        y: 95
+        width: 8
+        height: 22
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 6fc4d0b34e6df9450800000000000000
+      internalID: 6097828696214555894
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: base effects_32
+      rect:
+        serializedVersion: 2
+        x: 99
+        y: 69
+        width: 11
+        height: 26
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 20c5e4d053a39a0d0800000000000000
+      internalID: -3411131243225523198
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: base effects_33
+      rect:
+        serializedVersion: 2
+        x: 103
+        y: 95
+        width: 8
+        height: 22
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 96da3f55194f3b490800000000000000
+      internalID: -7731567230215541399
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    outline: []
+    customData: 
+    physicsShape: []
+    bones: []
+    spriteID: 
+    internalID: 0
+    vertices: []
+    indices: 
+    edges: []
+    weights: []
+    secondaryTextures: []
+    spriteCustomMetadata:
+      entries: []
+    nameFileIdTable:
+      base effects_0: -2560881229006624147
+      base effects_1: 418631993258490229
+      base effects_10: -1039573553976575905
+      base effects_11: -7156824022406839204
+      base effects_12: 9196721467572357888
+      base effects_13: -8272885844343145049
+      base effects_14: 4676367699899514510
+      base effects_15: 4267014358054431740
+      base effects_16: -3632903220524028158
+      base effects_17: 5629970021041566745
+      base effects_18: 1314687355841645844
+      base effects_19: 3409242424717745170
+      base effects_2: 5358260981728427902
+      base effects_20: -1527049847600627397
+      base effects_21: 2584240642290394365
+      base effects_22: 8327303947458159467
+      base effects_23: 6392106179668681573
+      base effects_24: 8583298329940437394
+      base effects_25: -1301976721398802506
+      base effects_26: -8958885541799285266
+      base effects_27: 3295583353215140286
+      base effects_28: 3919837228297125220
+      base effects_29: 8885639913090566978
+      base effects_3: -1030670995733177005
+      base effects_30: -674529280358724022
+      base effects_31: 6097828696214555894
+      base effects_32: -3411131243225523198
+      base effects_33: -7731567230215541399
+      base effects_4: 8380609605182675989
+      base effects_5: 3517372474530651525
+      base effects_6: 7825188741394244814
+      base effects_7: -8489313962943586683
+      base effects_8: -1518650449856924039
+      base effects_9: -4713358627239836769
+  mipmapLimitGroupName: 
+  pSDRemoveMatte: 0
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
