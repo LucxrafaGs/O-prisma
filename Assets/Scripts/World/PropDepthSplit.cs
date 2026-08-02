@@ -12,7 +12,6 @@ using UnityEngine.Rendering;
 public class PropDepthSplit : MonoBehaviour
 {
     public const string TopChildName = "PropTop";
-    public const int TopSortBoost = 5000;
 
     private static Shader clipShader;
 
@@ -54,10 +53,15 @@ public class PropDepthSplit : MonoBehaviour
         if (baseRenderer == null)
             return;
 
-        int order = WorldDepth.OrderFromY(transform.position.y);
-        baseRenderer.sortingOrder = order;
+        baseRenderer.sortingLayerID = 0;
+        baseRenderer.sortingOrder = WorldDepth.ActorSortOrder;
+        baseRenderer.spriteSortPoint = SpriteSortPoint.Pivot;
         if (topRenderer != null && topRenderer.enabled)
-            topRenderer.sortingOrder = order + TopSortBoost;
+        {
+            topRenderer.sortingLayerID = 0;
+            topRenderer.sortingOrder = WorldDepth.CanopySortOrder;
+            topRenderer.spriteSortPoint = SpriteSortPoint.Pivot;
+        }
     }
 
     private void OnDestroy()

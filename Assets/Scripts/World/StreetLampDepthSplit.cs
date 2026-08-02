@@ -14,8 +14,6 @@ public class StreetLampDepthSplit : MonoBehaviour
 {
     public const string TopChildName = "LampTop";
 
-    private const int TopSortBoost = 5000;
-
     private static Shader clipShader;
 
     private SpriteRenderer baseRenderer;
@@ -41,12 +39,19 @@ public class StreetLampDepthSplit : MonoBehaviour
 
     private void LateUpdate()
     {
-        int order = WorldDepth.OrderFromY(transform.position.y);
         if (baseRenderer != null)
-            baseRenderer.sortingOrder = order;
+        {
+            baseRenderer.sortingLayerID = 0;
+            baseRenderer.sortingOrder = WorldDepth.ActorSortOrder;
+            baseRenderer.spriteSortPoint = SpriteSortPoint.Pivot;
+        }
 
         if (topRenderer != null)
-            topRenderer.sortingOrder = order + TopSortBoost;
+        {
+            topRenderer.sortingLayerID = 0;
+            topRenderer.sortingOrder = WorldDepth.CanopySortOrder;
+            topRenderer.spriteSortPoint = SpriteSortPoint.Pivot;
+        }
     }
 
     private void OnDestroy()

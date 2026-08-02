@@ -10,8 +10,8 @@ using UnityEngine.Rendering;
 [RequireComponent(typeof(SpriteRenderer))]
 public class ElasticFoliage : MonoBehaviour
 {
-    private const float BaseHeightFraction = 0.36f;
-    private const int CanopySortBoost = 5000;
+    private const float BaseHeightFraction = 0.48f;
+    private const int CanopySortBoost = 1;
 
     private static Shader clipShader;
 
@@ -82,13 +82,12 @@ public class ElasticFoliage : MonoBehaviour
         if (!hasTrunkCollision || baseRenderer == null)
             return;
 
-        int order = WorldDepth.OrderFromY(transform.position.y);
-        baseRenderer.sortingOrder = order;
+        baseRenderer.sortingLayerID = 0;
+        baseRenderer.sortingOrder = WorldDepth.ActorSortOrder;
         if (canopyRenderer != null && canopyRenderer.enabled)
         {
-            // Default layer — sob a neblina; não usar layer Foliage.
-            canopyRenderer.sortingLayerID = baseRenderer.sortingLayerID;
-            canopyRenderer.sortingOrder = order + CanopySortBoost;
+            canopyRenderer.sortingLayerID = 0;
+            canopyRenderer.sortingOrder = WorldDepth.CanopySortOrder;
         }
     }
 
