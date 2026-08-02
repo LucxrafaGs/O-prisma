@@ -9,12 +9,27 @@ using UnityEngine.Tilemaps;
 /// </summary>
 public static class WorldGroundSortingBootstrap
 {
+    /// <summary>
+    /// Tilemaps de props com collider (estátuas etc.) que ficavam com Order alto
+    /// e cobriam o player. Devem ficar abaixo do range de atores (0–19).
+    /// </summary>
+    private static readonly string[] BehindActorTilemaps =
+    {
+        "Colider",
+        "Collider",
+        "Colider_Props",
+        "Collider_Props",
+    };
+
+    private const int BehindActorOrder = -1;
+
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
     private static void Apply()
     {
         // Qualquer tilemap que tenha ficado numa layer inválida / Ground volta pra Default.
         TilemapRenderer[] maps = Object.FindObjectsByType<TilemapRenderer>(FindObjectsInactive.Include);
         int restored = 0;
+        int behindFixed = 0;
         for (int i = 0; i < maps.Length; i++)
         {
             TilemapRenderer renderer = maps[i];
@@ -26,12 +41,35 @@ public static class WorldGroundSortingBootstrap
                 renderer.sortingLayerName = "Default";
                 restored++;
             }
+
+            if (ShouldStayBehindActors(renderer.gameObject.name) &&
+                renderer.sortingOrder >= 0)
+            {
+                renderer.sortingOrder = BehindActorOrder;
+                behindFixed++;
+            }
         }
 
         EnsureLightsTargetAllSortingLayers();
 
         if (restored > 0)
             Debug.Log($"Prisma: {restored} tilemaps restaurados para Sorting Layer Default (mapa visível + lit).");
+        if (behindFixed > 0)
+            Debug.Log($"Prisma: {behindFixed} tilemaps de props (Colider) atrás do player (Order {BehindActorOrder}).");
+    }
+
+    private static bool ShouldStayBehindActors(string name)
+    {
+        if (string.IsNullOrEmpty(name))
+            return false;
+
+        for (int i = 0; i < BehindActorTilemaps.Length; i++)
+        {
+            if (name == BehindActorTilemaps[i])
+                return true;
+        }
+
+        return false;
     }
 
     private static void EnsureLightsTargetAllSortingLayers()
