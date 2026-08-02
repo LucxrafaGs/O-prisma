@@ -49,6 +49,8 @@ public class PlayerController : MonoBehaviour
     private int toeTapFrameIndex;
     private float toeTapFrameTimer;
 
+    public Facing CurrentFacing => facing;
+
     /// <summary>True enquanto há input de movimento (passos / SFX).</summary>
     public bool IsMoving => ReadMovementInput().sqrMagnitude > 0.01f;
 

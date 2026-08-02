@@ -63,7 +63,9 @@ public class DappledSunLighting : MonoBehaviour
 
         Instance = this;
         DayNightLighting.DappledAmbientFloor = 1f;
-        Build();
+        CleanupLeftoverCloudShadows();
+        // Sombras de nuvem desativadas — não ficaram legais.
+        enabled = false;
     }
 
     private void OnDestroy()
@@ -91,47 +93,11 @@ public class DappledSunLighting : MonoBehaviour
 
     private void LateUpdate()
     {
-        DayNightLighting.DappledAmbientFloor = 1f;
-        if (root == null || clouds.Count == 0)
-            return;
-
-        float dt = Time.deltaTime;
-        Vector2 focus = GetFocus();
-        float time = Time.time;
-
-        for (int i = 0; i < clouds.Count; i++)
-        {
-            CloudShadow cloud = clouds[i];
-            if (cloud.Transform == null)
-                continue;
-
-            Vector3 pos = cloud.Transform.position;
-            pos.x += cloud.Speed * dt;
-
-            float breath = 1f + 0.02f * Mathf.Sin(time * 0.25f + cloud.Phase);
-            float s = cloud.BaseScale * breath;
-            // Achada = mancha no chão.
-            cloud.Transform.localScale = new Vector3(s * 1.25f, s * 0.65f, 1f);
-            cloud.Transform.position = pos;
-
-            if (cloud.Renderer != null)
-            {
-                cloud.Renderer.sortingOrder = GroundSortOrder;
-                cloud.Renderer.color = GroundShadowColor;
-            }
-
-            if (pos.x > focus.x + despawnRightPadding)
-                RespawnOnLeft(ref cloud, focus);
-
-            clouds[i] = cloud;
-        }
-
-        UpdateActorShadowTints();
+        // Desativado: sem movimento de nuvens.
     }
 
-    private void Build()
+    private static void CleanupLeftoverCloudShadows()
     {
-        // Limpa restos antigos (fumaça/overlays de versões anteriores).
         GameObject[] leftovers = FindObjectsByType<GameObject>(FindObjectsInactive.Include);
         for (int i = 0; i < leftovers.Length; i++)
         {
@@ -139,24 +105,15 @@ public class DappledSunLighting : MonoBehaviour
             if (go == null)
                 continue;
             string n = go.name;
-            if (n == "CloudShadows_World" || n == "CloudShadows_Ground" || n == "DappledSunRig" || n == "SunPatches_World")
+            if (n == "CloudShadows_World" || n == "CloudShadows_Ground" || n == "DappledSunRig" || n == "SunPatches_World"
+                || n.StartsWith("CloudSilhouette_"))
                 Destroy(go);
         }
+    }
 
-        GameObject rootObject = new GameObject("CloudShadows_Ground");
-        rootObject.transform.SetParent(null);
-        root = rootObject.transform;
-
-        shadowMaterial = CreateSilhouetteMaterial();
-        cookieVariants.Add(GenerateHardCloudSilhouette(TextureSize, 0));
-        cookieVariants.Add(GenerateHardCloudSilhouette(TextureSize, 1));
-        cookieVariants.Add(GenerateHardCloudSilhouette(TextureSize, 2));
-
-        Vector2 focus = GetFocus();
-        // Espaça bem no eixo Y pra não virar um “tapete” de fumaça.
-        float[] ySlots = { -4.5f, 0.5f, 4.2f };
-        for (int i = 0; i < CloudCount; i++)
-            SpawnCloud(focus, i, ySlots[i % ySlots.Length]);
+    private void Build()
+    {
+        CleanupLeftoverCloudShadows();
     }
 
     private void SpawnCloud(Vector2 focus, int index, float yOffset)
