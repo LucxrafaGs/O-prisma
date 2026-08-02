@@ -4,31 +4,21 @@ using UnityEngine;
 using UnityEngine.Rendering;
 
 /// <summary>
-/// Eco: NPC comum (mesmos sprites) todo preto, anda ou corre até o jogador,
-/// para em silêncio e depois carrega. Sem distorção de tela.
+/// Eco: NPC comum todo preto. Anda de fora da tela até o jogador, para, e carrega.
+/// Áudio do mundo permanece normal (sem mute).
 /// </summary>
 [DisallowMultipleComponent]
 public class EchoApparition : MonoBehaviour
 {
-    public enum ApproachStyle
-    {
-        Walk = 0,
-        Run = 1
-    }
-
     private PlayerAppearance appearance;
     private ParticleSystem aura;
     private Transform player;
-    private ApproachStyle style;
     private PlayerController.Facing facing = PlayerController.Facing.Down;
     private float walkFrameDuration = 0.12f;
     private int animFrameIndex;
     private float animFrameTimer;
-    private bool worldMuted;
-    private bool finished;
 
     private const float WalkSpeed = 1.55f;
-    private const float RunSpeed = 3.4f;
     private const float ChargeSpeed = 22f;
 
     public static EchoApparition Spawn(Transform playerTransform)
@@ -42,10 +32,8 @@ public class EchoApparition : MonoBehaviour
     private void Setup(Transform playerTransform)
     {
         player = playerTransform;
-        style = Random.value < 0.45f ? ApproachStyle.Run : ApproachStyle.Walk;
         transform.localScale = CharacterWorldScale.Vector;
 
-        // Mesmo setup visual de um NPC comum.
         appearance = gameObject.AddComponent<PlayerAppearance>();
         appearance.SetApplySavedAppearanceOnAwake(false);
 
@@ -72,7 +60,7 @@ public class EchoApparition : MonoBehaviour
         group.sortingOrder = WorldDepth.ActorOrderMax;
 
         Vector2 stopPoint = PickStopPoint();
-        transform.position = PickSpawnPoint(stopPoint);
+        transform.position = PickOffscreenSpawn(stopPoint);
 
         Vector2 toStop = stopPoint - (Vector2)transform.position;
         facing = FacingFrom(toStop.sqrMagnitude > 0.01f ? toStop.normalized : Vector2.down);
@@ -84,13 +72,6 @@ public class EchoApparition : MonoBehaviour
         StartCoroutine(RunSequence(stopPoint));
     }
 
-    private void OnDestroy()
-    {
-        if (worldMuted && !finished)
-            SoundsOfTheWorld.Instance?.RestoreWorldAfterEcho(withThunder: false);
-    }
-
-    /// <summary>Mantém material lit do NPC; só escurece a cor (silhueta preta).</summary>
     private void PaintNpcBlack()
     {
         SpriteRenderer[] renderers = GetComponentsInChildren<SpriteRenderer>(true);
@@ -104,43 +85,41 @@ public class EchoApparition : MonoBehaviour
         Vector2 offset = Random.insideUnitCircle.normalized;
         if (offset.sqrMagnitude < 0.01f)
             offset = Vector2.down;
-        float dist = Random.Range(1.6f, 2.9f);
-        return ClampToCamera(origin + offset * dist, margin: 0.55f);
+        float dist = Random.Range(1.6f, 2.6f);
+        return ClampToCamera(origin + offset * dist, margin: 0.7f);
     }
 
-    private Vector2 PickSpawnPoint(Vector2 stopPoint)
+    /// <summary>Nasce fora da tela, alinhado com o ponto de parada.</summary>
+    private Vector2 PickOffscreenSpawn(Vector2 stopPoint)
     {
         Camera cam = Camera.main;
         if (cam == null)
-            return stopPoint + Vector2.left * 3f;
+            return stopPoint + Vector2.left * 5f;
 
         float halfH = cam.orthographicSize;
         float halfW = halfH * cam.aspect;
         Vector2 camPos = cam.transform.position;
+        float margin = 1.4f;
 
-        Vector2 away = player != null
+        Vector2 fromPlayer = player != null
             ? (stopPoint - (Vector2)player.position).normalized
             : Vector2.right;
-        if (away.sqrMagnitude < 0.01f)
-            away = Vector2.right;
+        if (fromPlayer.sqrMagnitude < 0.01f)
+            fromPlayer = Vector2.right;
 
-        Vector2 spawn = stopPoint + away * Random.Range(2.8f, 4.2f);
-        spawn.x = Mathf.Clamp(spawn.x, camPos.x - halfW + 0.2f, camPos.x + halfW - 0.2f);
-        spawn.y = Mathf.Clamp(spawn.y, camPos.y - halfH + 0.2f, camPos.y + halfH - 0.2f);
+        // Preferir a borda mais alinhada à direção (vindo de fora).
+        Vector2 candidate = stopPoint + fromPlayer * (Mathf.Max(halfW, halfH) + margin);
+        int edge = Mathf.Abs(fromPlayer.x) >= Mathf.Abs(fromPlayer.y)
+            ? (fromPlayer.x >= 0f ? 1 : 0)
+            : (fromPlayer.y >= 0f ? 3 : 2);
 
-        if (Vector2.Distance(spawn, stopPoint) < 1.2f)
+        return edge switch
         {
-            int edge = Random.Range(0, 4);
-            spawn = edge switch
-            {
-                0 => new Vector2(camPos.x - halfW + 0.35f, stopPoint.y),
-                1 => new Vector2(camPos.x + halfW - 0.35f, stopPoint.y),
-                2 => new Vector2(stopPoint.x, camPos.y - halfH + 0.35f),
-                _ => new Vector2(stopPoint.x, camPos.y + halfH - 0.35f)
-            };
-        }
-
-        return spawn;
+            0 => new Vector2(camPos.x - halfW - margin, Mathf.Clamp(stopPoint.y, camPos.y - halfH, camPos.y + halfH)),
+            1 => new Vector2(camPos.x + halfW + margin, Mathf.Clamp(stopPoint.y, camPos.y - halfH, camPos.y + halfH)),
+            2 => new Vector2(Mathf.Clamp(stopPoint.x, camPos.x - halfW, camPos.x + halfW), camPos.y - halfH - margin),
+            _ => new Vector2(Mathf.Clamp(stopPoint.x, camPos.x - halfW, camPos.x + halfW), camPos.y + halfH + margin)
+        };
     }
 
     private static Vector2 ClampToCamera(Vector2 world, float margin)
@@ -204,13 +183,13 @@ public class EchoApparition : MonoBehaviour
 
     private IEnumerator RunSequence(Vector2 stopPoint)
     {
-        yield return Approach(stopPoint);
+        SoundsOfTheWorld audio = SoundsOfTheWorld.Instance;
+
+        // Anda normalmente até parar na frente do jogador; sussurro sobe um pouco.
+        yield return Approach(stopPoint, audio, whisperFrom: 0.45f, whisperTo: 0.7f);
 
         appearance.SetFrame(IdleIndex(facing));
-        SoundsOfTheWorld.Instance?.MuteWorldForEcho();
-        worldMuted = true;
-
-        float hold = Random.Range(1.1f, 2.1f);
+        float hold = Random.Range(0.7f, 1.35f);
         float held = 0f;
         while (held < hold)
         {
@@ -228,35 +207,36 @@ public class EchoApparition : MonoBehaviour
             yield return null;
         }
 
-        SoundsOfTheWorld.Instance?.RestoreWorldAfterEcho(withThunder: true);
-        worldMuted = false;
         BoostParticles();
+        // Corre com tudo enquanto o sussurro sobe ao máximo.
+        yield return ChargeAtPlayer(audio, whisperFrom: 0.7f, whisperTo: 1f);
 
-        yield return ChargeAtPlayer();
-
-        finished = true;
         Destroy(gameObject);
     }
 
-    private IEnumerator Approach(Vector2 stopPoint)
+    private IEnumerator Approach(Vector2 stopPoint, SoundsOfTheWorld audio, float whisperFrom, float whisperTo)
     {
-        float speed = style == ApproachStyle.Run ? RunSpeed : WalkSpeed;
-        bool fastAnim = style == ApproachStyle.Run;
+        Vector2 start = transform.position;
+        float total = Mathf.Max(0.01f, Vector2.Distance(start, stopPoint));
 
         while (Vector2.Distance(transform.position, stopPoint) > 0.08f)
         {
+            float progress = 1f - Vector2.Distance(transform.position, stopPoint) / total;
+            audio?.SetEncounterWhisperVolume(Mathf.Lerp(whisperFrom, whisperTo, progress));
+
             Vector2 to = stopPoint - (Vector2)transform.position;
             facing = FacingFrom(to.normalized);
             transform.position = Vector3.MoveTowards(
-                transform.position, stopPoint, speed * Time.deltaTime);
-            TickWalkAnim(fastAnim);
+                transform.position, stopPoint, WalkSpeed * Time.deltaTime);
+            TickWalkAnim(fast: false);
             yield return null;
         }
 
         transform.position = stopPoint;
+        audio?.SetEncounterWhisperVolume(whisperTo);
     }
 
-    private IEnumerator ChargeAtPlayer()
+    private IEnumerator ChargeAtPlayer(SoundsOfTheWorld audio, float whisperFrom, float whisperTo)
     {
         Vector2 target = player != null ? (Vector2)player.position : (Vector2)transform.position;
         Vector2 dir = target - (Vector2)transform.position;
@@ -271,6 +251,7 @@ public class EchoApparition : MonoBehaviour
         while (t < maxTime && Vector2.Distance(transform.position, end) > 0.15f)
         {
             t += Time.deltaTime;
+            audio?.SetEncounterWhisperVolume(Mathf.Lerp(whisperFrom, whisperTo, t / maxTime));
             transform.position = Vector3.MoveTowards(
                 transform.position, end, ChargeSpeed * Time.deltaTime);
             TickWalkAnim(fast: true);
@@ -287,6 +268,8 @@ public class EchoApparition : MonoBehaviour
 
             yield return null;
         }
+
+        audio?.SetEncounterWhisperVolume(whisperTo);
     }
 
     private void TickWalkAnim(bool fast = false)
