@@ -66,6 +66,7 @@ public class NpcWorldBootstrap : MonoBehaviour
         CharacterLibraryAccess.WarmUp();
         EnsureGameSystems();
         EnsureSupportObjects();
+        TreeDepthSplitBootstrap.ApplyAll();
 
         Transform root = transform.Find("NPCs");
         if (root == null)
