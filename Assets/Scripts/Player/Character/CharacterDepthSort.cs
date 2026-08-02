@@ -2,7 +2,7 @@ using UnityEngine;
 using UnityEngine.Rendering;
 
 /// <summary>
-/// Y-sort do personagem com order compacto (0–19) para não furar overlays Order 20+.
+/// Y-sort do personagem com order 10–19 (acima das estátuas em Order 9).
 /// </summary>
 [DisallowMultipleComponent]
 [RequireComponent(typeof(SortingGroup))]

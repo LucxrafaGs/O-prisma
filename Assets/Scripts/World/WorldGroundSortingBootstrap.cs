@@ -10,10 +10,10 @@ using UnityEngine.Tilemaps;
 public static class WorldGroundSortingBootstrap
 {
     /// <summary>
-    /// Tilemaps de props com collider (estátuas etc.) que ficavam com Order alto
-    /// e cobriam o player. Devem ficar abaixo do range de atores (0–19).
+    /// Tilemaps de props com collider (estátuas): Order fixo acima das árvores
+    /// e abaixo do player/NPC.
     /// </summary>
-    private static readonly string[] BehindActorTilemaps =
+    private static readonly string[] StatueTilemaps =
     {
         "Colider",
         "Collider",
@@ -21,15 +21,13 @@ public static class WorldGroundSortingBootstrap
         "Collider_Props",
     };
 
-    private const int BehindActorOrder = -1;
-
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
     private static void Apply()
     {
         // Qualquer tilemap que tenha ficado numa layer inválida / Ground volta pra Default.
         TilemapRenderer[] maps = Object.FindObjectsByType<TilemapRenderer>(FindObjectsInactive.Include);
         int restored = 0;
-        int behindFixed = 0;
+        int statuesFixed = 0;
         for (int i = 0; i < maps.Length; i++)
         {
             TilemapRenderer renderer = maps[i];
@@ -42,11 +40,10 @@ public static class WorldGroundSortingBootstrap
                 restored++;
             }
 
-            if (ShouldStayBehindActors(renderer.gameObject.name) &&
-                renderer.sortingOrder >= 0)
+            if (IsStatueTilemap(renderer.gameObject.name))
             {
-                renderer.sortingOrder = BehindActorOrder;
-                behindFixed++;
+                renderer.sortingOrder = WorldDepth.StatueOrder;
+                statuesFixed++;
             }
         }
 
@@ -54,18 +51,18 @@ public static class WorldGroundSortingBootstrap
 
         if (restored > 0)
             Debug.Log($"Prisma: {restored} tilemaps restaurados para Sorting Layer Default (mapa visível + lit).");
-        if (behindFixed > 0)
-            Debug.Log($"Prisma: {behindFixed} tilemaps de props (Colider) atrás do player (Order {BehindActorOrder}).");
+        if (statuesFixed > 0)
+            Debug.Log($"Prisma: {statuesFixed} tilemaps de estátuas (Colider) Order={WorldDepth.StatueOrder} (arvores < estatuas < player).");
     }
 
-    private static bool ShouldStayBehindActors(string name)
+    private static bool IsStatueTilemap(string name)
     {
         if (string.IsNullOrEmpty(name))
             return false;
 
-        for (int i = 0; i < BehindActorTilemaps.Length; i++)
+        for (int i = 0; i < StatueTilemaps.Length; i++)
         {
-            if (name == BehindActorTilemaps[i])
+            if (name == StatueTilemaps[i])
                 return true;
         }
 
