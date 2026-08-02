@@ -3,15 +3,14 @@ using UnityEngine.InputSystem;
 using UnityEngine.Rendering.Universal;
 
 /// <summary>
-/// Lanterna na hotbar + E: cone na direção do looking.
-/// Origem na mão (offsets locais; player escala ~2.8).
-/// Ao andar para cima (costas), origem fica baixa sob o torso.
+/// Lanterna: cone direcionado + halo suave ao redor do player (luz se dispersando).
 /// </summary>
 [DisallowMultipleComponent]
 public class PlayerFlashlight : MonoBehaviour
 {
     public const string LanternItemId = "lanterna";
 
+    [Header("Cone (feixe)")]
     [SerializeField] private float outerRadius = 6.5f;
     [SerializeField] private float innerRadius = 0.35f;
     [SerializeField] private float intensity = 1.45f;
@@ -19,16 +18,22 @@ public class PlayerFlashlight : MonoBehaviour
     [SerializeField] [Range(10f, 120f)] private float outerSpotAngle = 70f;
     [SerializeField] [Range(5f, 90f)] private float innerSpotAngle = 28f;
 
-    // Pivot nos pés; offsets baixos e perto do corpo (mão).
+    [Header("Halo suave (dispersão no player)")]
+    [SerializeField] private float softOuterRadius = 2.4f;
+    [SerializeField] private float softInnerRadius = 0.2f;
+    [SerializeField] private float softIntensity = 0.55f;
+    [SerializeField] [Range(0.1f, 1f)] private float softFalloff = 0.75f;
+
     [Header("Mão (local, pivot nos pés)")]
     [SerializeField] private Vector2 handOffsetLeft = new(-0.12f, 0.05f);
     [SerializeField] private Vector2 handOffsetRight = new(0.12f, 0.05f);
     [SerializeField] private Vector2 handOffsetDown = new(0.04f, 0.04f);
-    [Tooltip("Costas: origem baixa sob o corpo para o feixe sair por baixo do sprite.")]
     [SerializeField] private Vector2 handOffsetUp = new(0f, 0.03f);
 
     private Light2D spotLight;
+    private Light2D softLight;
     private Transform lightTransform;
+    private Transform softTransform;
     private PlayerController player;
     private bool isOn;
 
@@ -74,6 +79,8 @@ public class PlayerFlashlight : MonoBehaviour
         isOn = enabled && IsHoldingLantern();
         if (spotLight != null)
             spotLight.enabled = isOn;
+        if (softLight != null)
+            softLight.enabled = isOn;
     }
 
     private void AimLightAtFacing()
@@ -83,14 +90,19 @@ public class PlayerFlashlight : MonoBehaviour
             : PlayerController.Facing.Down;
 
         Vector2 hand = HandOffset(facing);
-        lightTransform.localRotation = Quaternion.Euler(0f, 0f, FacingToZRotation(facing));
-
-        // Costas: Z positivo coloca a origem da luz “atrás” do sprite no depth 2D,
-        // para o ponto de saída ficar visualmente sob o player.
         float z = facing == PlayerController.Facing.Up ? 0.15f : 0f;
-        lightTransform.localPosition = new Vector3(hand.x, hand.y, z);
+        Vector3 origin = new(hand.x, hand.y, z);
 
+        lightTransform.localRotation = Quaternion.Euler(0f, 0f, FacingToZRotation(facing));
+        lightTransform.localPosition = origin;
         spotLight.lightOrder = facing == PlayerController.Facing.Up ? -1 : 0;
+
+        // Halo no mesmo ponto de saída — ilumina o player e o chão ao redor com suavidade.
+        if (softTransform != null)
+        {
+            softTransform.localPosition = origin;
+            softTransform.localRotation = Quaternion.identity;
+        }
     }
 
     private Vector2 HandOffset(PlayerController.Facing facing)
@@ -126,34 +138,62 @@ public class PlayerFlashlight : MonoBehaviour
 
     private void EnsureLight()
     {
-        Transform existing = transform.Find("Flashlight");
-        GameObject lightObject;
-        if (existing == null)
-        {
-            lightObject = new GameObject("Flashlight");
-            lightObject.transform.SetParent(transform, false);
-        }
-        else
-        {
-            lightObject = existing.gameObject;
-        }
+        lightTransform = EnsureChild("Flashlight");
+        spotLight = EnsureLight2D(lightTransform.gameObject);
+        ConfigureSpot(spotLight);
 
-        lightTransform = lightObject.transform;
-        spotLight = lightObject.GetComponent<Light2D>();
-        if (spotLight == null)
-            spotLight = lightObject.AddComponent<Light2D>();
-
-        spotLight.lightType = Light2D.LightType.Point;
-        spotLight.color = lightColor;
-        spotLight.intensity = intensity;
-        spotLight.pointLightInnerRadius = innerRadius;
-        spotLight.pointLightOuterRadius = outerRadius;
-        spotLight.pointLightInnerAngle = Mathf.Clamp(innerSpotAngle, 5f, outerSpotAngle);
-        spotLight.pointLightOuterAngle = Mathf.Clamp(outerSpotAngle, 10f, 120f);
-        spotLight.falloffIntensity = 0.45f;
-        spotLight.overlapOperation = Light2D.OverlapOperation.AlphaBlend;
+        softTransform = EnsureChild("FlashlightSoft");
+        softLight = EnsureLight2D(softTransform.gameObject);
+        ConfigureSoft(softLight);
 
         AimLightAtFacing();
+    }
+
+    private Transform EnsureChild(string childName)
+    {
+        Transform existing = transform.Find(childName);
+        if (existing != null)
+            return existing;
+
+        GameObject go = new(childName);
+        go.transform.SetParent(transform, false);
+        return go.transform;
+    }
+
+    private static Light2D EnsureLight2D(GameObject host)
+    {
+        Light2D light = host.GetComponent<Light2D>();
+        if (light == null)
+            light = host.AddComponent<Light2D>();
+        return light;
+    }
+
+    private void ConfigureSpot(Light2D light)
+    {
+        light.lightType = Light2D.LightType.Point;
+        light.color = lightColor;
+        light.intensity = intensity;
+        light.pointLightInnerRadius = innerRadius;
+        light.pointLightOuterRadius = outerRadius;
+        light.pointLightInnerAngle = Mathf.Clamp(innerSpotAngle, 5f, outerSpotAngle);
+        light.pointLightOuterAngle = Mathf.Clamp(outerSpotAngle, 10f, 120f);
+        light.falloffIntensity = 0.45f;
+        light.overlapOperation = Light2D.OverlapOperation.AlphaBlend;
+    }
+
+    private void ConfigureSoft(Light2D light)
+    {
+        // 360° — dispersão suave em volta do ponto de saída / player.
+        light.lightType = Light2D.LightType.Point;
+        light.color = lightColor;
+        light.intensity = softIntensity;
+        light.pointLightInnerRadius = softInnerRadius;
+        light.pointLightOuterRadius = softOuterRadius;
+        light.pointLightInnerAngle = 360f;
+        light.pointLightOuterAngle = 360f;
+        light.falloffIntensity = softFalloff;
+        light.overlapOperation = Light2D.OverlapOperation.AlphaBlend;
+        light.lightOrder = -2;
     }
 }
 
