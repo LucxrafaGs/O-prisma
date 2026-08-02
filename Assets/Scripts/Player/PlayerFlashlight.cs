@@ -3,7 +3,9 @@ using UnityEngine.InputSystem;
 using UnityEngine.Rendering.Universal;
 
 /// <summary>
-/// Lanterna na hotbar + E: luz em cone triangular só na direção que o player olha.
+/// Lanterna na hotbar + E: cone na direção do looking.
+/// Origem na mão (offsets locais; player escala ~2.8).
+/// Ao andar para cima (costas), origem fica baixa sob o torso.
 /// </summary>
 [DisallowMultipleComponent]
 public class PlayerFlashlight : MonoBehaviour
@@ -11,15 +13,22 @@ public class PlayerFlashlight : MonoBehaviour
     public const string LanternItemId = "lanterna";
 
     [SerializeField] private float outerRadius = 6.5f;
-    [SerializeField] private float innerRadius = 0.55f;
+    [SerializeField] private float innerRadius = 0.35f;
     [SerializeField] private float intensity = 1.45f;
     [SerializeField] private Color lightColor = new(1f, 0.92f, 0.72f, 1f);
-    [SerializeField] private Vector2 holdOffset = new(0f, 0.35f);
     [SerializeField] [Range(10f, 120f)] private float outerSpotAngle = 70f;
     [SerializeField] [Range(5f, 90f)] private float innerSpotAngle = 28f;
-    [SerializeField] private float forwardOffset = 0.25f;
+
+    // Pivot nos pés; Y ~0.12 ≈ mão/cintura com escala 2.8 do personagem.
+    [Header("Mão (local, pivot nos pés)")]
+    [SerializeField] private Vector2 handOffsetLeft = new(-0.22f, 0.12f);
+    [SerializeField] private Vector2 handOffsetRight = new(0.22f, 0.12f);
+    [SerializeField] private Vector2 handOffsetDown = new(0.08f, 0.1f);
+    [Tooltip("Costas: origem baixa sob o corpo para o feixe sair por baixo do sprite.")]
+    [SerializeField] private Vector2 handOffsetUp = new(0f, 0.06f);
 
     private Light2D spotLight;
+    private Transform lightTransform;
     private PlayerController player;
     private bool isOn;
 
@@ -54,7 +63,7 @@ public class PlayerFlashlight : MonoBehaviour
 
     private void LateUpdate()
     {
-        if (spotLight == null)
+        if (spotLight == null || lightTransform == null)
             return;
 
         AimLightAtFacing();
@@ -73,29 +82,29 @@ public class PlayerFlashlight : MonoBehaviour
             ? player.CurrentFacing
             : PlayerController.Facing.Down;
 
-        Vector2 forward = FacingToDirection(facing);
-        // Spot 2D aponta no eixo local +Y; Z rotation alinha esse eixo com a direção.
-        float z = FacingToZRotation(facing);
-        spotLight.transform.localRotation = Quaternion.Euler(0f, 0f, z);
-        spotLight.transform.localPosition = new Vector3(
-            holdOffset.x + forward.x * forwardOffset,
-            holdOffset.y + forward.y * forwardOffset,
-            0f);
+        Vector2 hand = HandOffset(facing);
+        lightTransform.localRotation = Quaternion.Euler(0f, 0f, FacingToZRotation(facing));
+
+        // Costas: Z positivo coloca a origem da luz “atrás” do sprite no depth 2D,
+        // para o ponto de saída ficar visualmente sob o player.
+        float z = facing == PlayerController.Facing.Up ? 0.15f : 0f;
+        lightTransform.localPosition = new Vector3(hand.x, hand.y, z);
+
+        spotLight.lightOrder = facing == PlayerController.Facing.Up ? -1 : 0;
     }
 
-    private static Vector2 FacingToDirection(PlayerController.Facing facing)
+    private Vector2 HandOffset(PlayerController.Facing facing)
     {
         return facing switch
         {
-            PlayerController.Facing.Up => Vector2.up,
-            PlayerController.Facing.Down => Vector2.down,
-            PlayerController.Facing.Left => Vector2.left,
-            PlayerController.Facing.Right => Vector2.right,
-            _ => Vector2.down
+            PlayerController.Facing.Left => handOffsetLeft,
+            PlayerController.Facing.Right => handOffsetRight,
+            PlayerController.Facing.Up => handOffsetUp,
+            PlayerController.Facing.Down => handOffsetDown,
+            _ => handOffsetDown
         };
     }
 
-    /// <summary>Rotação Z para o Spot apontar (local +Y) na direção do facing.</summary>
     private static float FacingToZRotation(PlayerController.Facing facing)
     {
         return facing switch
@@ -129,11 +138,11 @@ public class PlayerFlashlight : MonoBehaviour
             lightObject = existing.gameObject;
         }
 
+        lightTransform = lightObject.transform;
         spotLight = lightObject.GetComponent<Light2D>();
         if (spotLight == null)
             spotLight = lightObject.AddComponent<Light2D>();
 
-        // Point/Spot com ângulo &lt; 360 = cone (triângulo de luz à frente).
         spotLight.lightType = Light2D.LightType.Point;
         spotLight.color = lightColor;
         spotLight.intensity = intensity;
