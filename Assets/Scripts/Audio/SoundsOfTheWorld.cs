@@ -10,6 +10,7 @@ using UnityEngine.SceneManagement;
 /// <item><b>Chuva</b> — loop enquanto chove</item>
 /// <item><b>Música</b> — toca e às vezes pausa</item>
 /// <item><b>Passos</b> — enquanto o player anda</item>
+/// <item><b>Eco</b> — quando a silhueta bugada aparece</item>
 /// </list>
 /// Crie um empty "Sounds of the World" na cena ou deixe o bootstrap criar.
 /// </summary>
@@ -79,11 +80,17 @@ public class SoundsOfTheWorld : MonoBehaviour
     [SerializeField] private float footstepIntervalWalk = 0.38f;
     [SerializeField] private float footstepIntervalRun = 0.26f;
 
+    [Header("Eco (silhueta bugada)")]
+    [SerializeField] private AudioClip[] echoClips;
+    [SerializeField] private Vector2 echoVolume = new(0.45f, 0.85f);
+    [SerializeField] private Vector2 echoPitch = new(0.85f, 1.1f);
+
     private AudioSource sfxSource;
     private AudioSource thunderSource;
     private AudioSource rainSource;
     private AudioSource musicSource;
     private AudioSource footstepSource;
+    private AudioSource echoSource;
 
     private Coroutine[] randomRoutines;
     private Coroutine musicRoutine;
@@ -153,6 +160,7 @@ public class SoundsOfTheWorld : MonoBehaviour
         WorldAudioEvents.Thunder += OnThunder;
         WorldAudioEvents.RainStarted += OnRainStarted;
         WorldAudioEvents.RainStopped += OnRainStopped;
+        WorldAudioEvents.EchoAppeared += OnEchoAppeared;
         StartRandomChannels();
         if (musicStartsOnAwake)
             RestartMusicCycle();
@@ -163,6 +171,7 @@ public class SoundsOfTheWorld : MonoBehaviour
         WorldAudioEvents.Thunder -= OnThunder;
         WorldAudioEvents.RainStarted -= OnRainStarted;
         WorldAudioEvents.RainStopped -= OnRainStopped;
+        WorldAudioEvents.EchoAppeared -= OnEchoAppeared;
         StopAllCoroutines();
         randomRoutines = null;
         musicRoutine = null;
@@ -194,6 +203,7 @@ public class SoundsOfTheWorld : MonoBehaviour
         rainSource = CreateSource("Rain", true);
         musicSource = CreateSource("Music", true);
         footstepSource = CreateSource("Footsteps", false);
+        echoSource = CreateSource("Echo", false);
 
         rainSource.loop = true;
         musicSource.loop = false;
@@ -257,6 +267,20 @@ public class SoundsOfTheWorld : MonoBehaviour
             float pitch = Random.Range(channel.pitchRange.x, channel.pitchRange.y);
             PlayOneShot(sfxSource, clip, volume, pitch);
         }
+    }
+
+    private void OnEchoAppeared()
+    {
+        if (echoClips == null || echoClips.Length == 0 || echoSource == null)
+            return;
+
+        AudioClip clip = Pick(echoClips);
+        if (clip == null)
+            return;
+
+        float volume = Random.Range(echoVolume.x, echoVolume.y);
+        float pitch = Random.Range(echoPitch.x, echoPitch.y);
+        PlayOneShot(echoSource, clip, volume, pitch);
     }
 
     private void OnThunder(bool strong)

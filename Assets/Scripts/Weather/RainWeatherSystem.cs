@@ -17,8 +17,11 @@ public class RainWeatherSystem : MonoBehaviour
     [SerializeField] private float rainRate = 200f;
     // Queda quase vertical, leve inclinação → inferior-direito.
     [SerializeField] private Vector2 rainWind = new(1.05f, -4.2f);
-    [SerializeField] private Color rainColorNear = new(0.9f, 0.95f, 1f, 0.56f);
-    [SerializeField] private Color rainColorFar = new(0.58f, 0.66f, 0.74f, 0.4f);
+    // Maioria cinza suave; contraste claro fica no sistema raro.
+    [SerializeField] private Color rainColorNear = new(0.48f, 0.50f, 0.54f, 0.38f);
+    [SerializeField] private Color rainColorFar = new(0.34f, 0.36f, 0.40f, 0.28f);
+    [SerializeField] private Color rainContrastColor = new(0.78f, 0.82f, 0.88f, 0.45f);
+    [SerializeField] private float rainContrastRate = 18f;
 
     [Header("Respingo")]
     [SerializeField] private float splashRate = 160f;
@@ -49,6 +52,7 @@ public class RainWeatherSystem : MonoBehaviour
     private float fogIntensityTarget;
     private Transform systemsRoot;
     private ParticleSystem rainParticles;
+    private ParticleSystem rainContrastParticles;
     private ParticleSystem splashParticles;
     private ParticleSystem mistParticles;
     private ParticleSystem cloudParticles;
@@ -297,6 +301,7 @@ public class RainWeatherSystem : MonoBehaviour
         DayNightLighting.WeatherAmbientTint = Color.Lerp(Color.white, rainAmbientTint, rainIntensity);
 
         SetEmitterActive(rainParticles, true);
+        SetEmitterActive(rainContrastParticles, true);
         SetEmitterActive(splashParticles, true);
         ApplyRainIntensity();
         WorldAudioEvents.NotifyRainStarted();
@@ -322,6 +327,7 @@ public class RainWeatherSystem : MonoBehaviour
         DayNightLighting.WeatherAmbientMultiplier = rainAmbientMultiplier;
         DayNightLighting.WeatherAmbientTint = rainAmbientTint;
         SetEmitterActive(rainParticles, true);
+        SetEmitterActive(rainContrastParticles, true);
         SetEmitterActive(splashParticles, true);
         ApplyRainIntensity();
         WorldAudioEvents.NotifyRainStarted();
@@ -380,6 +386,7 @@ public class RainWeatherSystem : MonoBehaviour
         DayNightLighting.WeatherAmbientTint = Color.white;
         DayNightLighting.ThunderBoost = 0f;
         SetEmitterActive(rainParticles, false);
+        SetEmitterActive(rainContrastParticles, false);
         SetEmitterActive(splashParticles, false);
 
         if (thunderRoutine != null)
@@ -429,6 +436,7 @@ public class RainWeatherSystem : MonoBehaviour
     private void ApplyRainIntensity()
     {
         SetEmissionRate(rainParticles, rainRate * rainIntensity);
+        SetEmissionRate(rainContrastParticles, rainContrastRate * rainIntensity);
         SetEmissionRate(splashParticles, splashRate * rainIntensity);
 
         float ambientMul = Mathf.Lerp(1f, rainAmbientMultiplier, rainIntensity);
@@ -576,6 +584,7 @@ public class RainWeatherSystem : MonoBehaviour
         systemsRoot.SetParent(transform, false);
 
         rainParticles = CreateRainParticles(systemsRoot);
+        rainContrastParticles = CreateRainContrastParticles(systemsRoot);
         splashParticles = CreateSplashParticles(systemsRoot);
         mistParticles = CreateMistParticles(systemsRoot);
         cloudParticles = CreateCloudParticles(systemsRoot);
@@ -726,6 +735,72 @@ public class RainWeatherSystem : MonoBehaviour
         return ps;
     }
 
+    /// <summary>Poucas gotas mais claras só para contraste — a maioria fica no cinza.</summary>
+    private ParticleSystem CreateRainContrastParticles(Transform parent)
+    {
+        GameObject go = new("RainDropsContrast");
+        go.transform.SetParent(parent, false);
+        ParticleSystem ps = go.AddComponent<ParticleSystem>();
+        ps.Stop(true, ParticleSystemStopBehavior.StopEmittingAndClear);
+
+        var main = ps.main;
+        main.loop = true;
+        main.playOnAwake = false;
+        main.startLifetime = new ParticleSystem.MinMaxCurve(0.55f, 0.95f);
+        main.startSpeed = 0f;
+        main.startSize3D = true;
+        main.startSizeX = new ParticleSystem.MinMaxCurve(0.028f, 0.042f);
+        main.startSizeY = new ParticleSystem.MinMaxCurve(0.12f, 0.2f);
+        main.startSizeZ = 1f;
+        main.startColor = rainContrastColor;
+        main.maxParticles = 120;
+        main.simulationSpace = ParticleSystemSimulationSpace.World;
+        main.gravityModifier = 0f;
+        main.startRotation = new ParticleSystem.MinMaxCurve(
+            Mathf.Deg2Rad * -20f,
+            Mathf.Deg2Rad * -12f);
+
+        var emission = ps.emission;
+        emission.rateOverTime = rainContrastRate;
+
+        var shape = ps.shape;
+        shape.enabled = true;
+        shape.shapeType = ParticleSystemShapeType.Box;
+        shape.scale = new Vector3(20f, 12f, 1f);
+
+        SetVelocityTwoConstants(
+            ps.velocityOverLifetime,
+            new Vector2(rainWind.x * 0.9f, rainWind.y * 0.9f),
+            new Vector2(rainWind.x * 1.15f, rainWind.y * 1.15f));
+
+        var colorOverLifetime = ps.colorOverLifetime;
+        colorOverLifetime.enabled = true;
+        Gradient gradient = new();
+        gradient.SetKeys(
+            new[]
+            {
+                new GradientColorKey(Color.white, 0f),
+                new GradientColorKey(Color.white, 1f)
+            },
+            new[]
+            {
+                new GradientAlphaKey(0f, 0f),
+                new GradientAlphaKey(1f, 0.12f),
+                new GradientAlphaKey(1f, 0.7f),
+                new GradientAlphaKey(0f, 1f)
+            });
+        colorOverLifetime.color = gradient;
+
+        var renderer = go.GetComponent<ParticleSystemRenderer>();
+        renderer.material = CreateParticleMaterial(RainPixelTextures.RainStreak.texture);
+        renderer.sortMode = ParticleSystemSortMode.YoungestInFront;
+        renderer.renderMode = ParticleSystemRenderMode.Billboard;
+        renderer.alignment = ParticleSystemRenderSpace.View;
+        ForceOnTop(renderer, RainSortBase + 21);
+
+        return ps;
+    }
+
     private ParticleSystem CreateSplashParticles(Transform parent)
     {
         GameObject go = new("RainSplashes");
@@ -739,7 +814,7 @@ public class RainWeatherSystem : MonoBehaviour
         main.startLifetime = new ParticleSystem.MinMaxCurve(0.2f, 0.38f);
         main.startSpeed = 0f;
         main.startSize = new ParticleSystem.MinMaxCurve(0.16f, 0.34f);
-        main.startColor = new Color(0.9f, 0.95f, 1f, 0.92f);
+        main.startColor = new Color(0.52f, 0.54f, 0.58f, 0.55f);
         main.maxParticles = 1100;
         main.simulationSpace = ParticleSystemSimulationSpace.World;
         main.gravityModifier = 0f;

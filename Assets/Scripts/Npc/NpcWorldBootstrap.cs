@@ -139,6 +139,12 @@ public class NpcWorldBootstrap : MonoBehaviour
             gameObject.AddComponent<DappledSunLighting>();
 
         SoundsOfTheWorld.EnsureInScene();
+
+        if (Object.FindAnyObjectByType<EchoApparitionSystem>() == null)
+        {
+            GameObject echoHost = new GameObject("EchoApparitionSystem");
+            echoHost.AddComponent<EchoApparitionSystem>();
+        }
     }
 
     private static void EnsureSupportObjects()

@@ -1,14 +1,14 @@
-using System;
 using UnityEngine;
 
 /// <summary>
-/// Eventos de áudio do mundo (clima). <see cref="SoundsOfTheWorld"/> escuta estes sinais.
+/// Eventos de áudio do mundo (clima + eco).
 /// </summary>
 public static class WorldAudioEvents
 {
-    public static event Action<bool> Thunder;
-    public static event Action RainStarted;
-    public static event Action RainStopped;
+    public static event System.Action<bool> Thunder;
+    public static event System.Action RainStarted;
+    public static event System.Action RainStopped;
+    public static event System.Action EchoAppeared;
 
     public static void NotifyThunder(bool strong)
     {
@@ -23,5 +23,10 @@ public static class WorldAudioEvents
     public static void NotifyRainStopped()
     {
         RainStopped?.Invoke();
+    }
+
+    public static void NotifyEchoAppeared()
+    {
+        EchoAppeared?.Invoke();
     }
 }
