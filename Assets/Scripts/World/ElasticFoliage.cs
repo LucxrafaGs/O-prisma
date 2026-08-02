@@ -82,12 +82,13 @@ public class ElasticFoliage : MonoBehaviour
         if (!hasTrunkCollision || baseRenderer == null)
             return;
 
+        float y = transform.position.y;
         baseRenderer.sortingLayerID = 0;
-        baseRenderer.sortingOrder = WorldDepth.ActorSortOrder;
+        baseRenderer.sortingOrder = WorldDepth.ActorOrderFromY(y);
         if (canopyRenderer != null && canopyRenderer.enabled)
         {
             canopyRenderer.sortingLayerID = 0;
-            canopyRenderer.sortingOrder = WorldDepth.CanopySortOrder;
+            canopyRenderer.sortingOrder = WorldDepth.CanopyOrderFromY(y);
         }
     }
 

@@ -39,17 +39,18 @@ public class StreetLampDepthSplit : MonoBehaviour
 
     private void LateUpdate()
     {
+        float y = transform.position.y;
         if (baseRenderer != null)
         {
             baseRenderer.sortingLayerID = 0;
-            baseRenderer.sortingOrder = WorldDepth.ActorSortOrder;
+            baseRenderer.sortingOrder = WorldDepth.ActorOrderFromY(y);
             baseRenderer.spriteSortPoint = SpriteSortPoint.Pivot;
         }
 
         if (topRenderer != null)
         {
             topRenderer.sortingLayerID = 0;
-            topRenderer.sortingOrder = WorldDepth.CanopySortOrder;
+            topRenderer.sortingOrder = WorldDepth.CanopyOrderFromY(y);
             topRenderer.spriteSortPoint = SpriteSortPoint.Pivot;
         }
     }

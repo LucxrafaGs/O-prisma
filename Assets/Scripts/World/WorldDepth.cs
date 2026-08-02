@@ -1,23 +1,20 @@
 using UnityEngine;
 
 /// <summary>
-/// Constantes de sorting do mundo.
-/// Personagens e bases de árvores compartilham <see cref="ActorSortOrder"/> e usam
-/// Transparency Sort (Custom Axis Y) para frente/trás — assim Order 20+ na cena
-/// continua acima das árvores (WorldDepth antigo ~15000 furava qualquer order da cena).
+/// Sorting do mundo compatível com Orders baixos da cena (ex.: overlay 20).
+/// Y-sort via order compacto (0–19); neblina (~32000) e overlays (≥20) ficam acima.
 /// </summary>
 public static class WorldDepth
 {
-    /// <summary>Order compartilhado: player, NPCs e tronco/sombra das árvores.</summary>
-    public const int ActorSortOrder = 10;
+    /// <summary>Teto para atores/árvores — objetos com Order ≥ 20 ficam na frente.</summary>
+    public const int ActorOrderMax = 19;
 
-    /// <summary>Folhas / topo de props — acima dos atores, abaixo de overlays (20+) e neblina.</summary>
-    public const int CanopySortOrder = ActorSortOrder + 1;
+    public const int ActorOrderCenter = 10;
 
-    /// <summary>Sombra filha — logo atrás do tronco.</summary>
-    public const int ShadowSortOrder = ActorSortOrder - 1;
+    /// <summary>Quanto menor, menos “salto” de order; 2 ≈ bom para mapa top-down.</summary>
+    public const float ActorYPrecision = 2f;
 
-    // Legado (props/construções que ainda codificam Y no order).
+    // Legado (construções / sistemas que ainda usam faixa alta).
     public const float Precision = 100f;
     public const int OrderBias = 15000;
 
@@ -25,4 +22,30 @@ public static class WorldDepth
     {
         return Mathf.RoundToInt(-worldY * Precision) + OrderBias;
     }
+
+    /// <summary>
+    /// Order para player/NPC/tronco: sul (Y menor) → order maior → na frente.
+    /// Sempre &lt; 20 para respeitar overlays da cena.
+    /// </summary>
+    public static int ActorOrderFromY(float worldY)
+    {
+        int order = Mathf.RoundToInt(-worldY * ActorYPrecision) + ActorOrderCenter;
+        return Mathf.Clamp(order, 0, ActorOrderMax);
+    }
+
+    /// <summary>Folhas: 1 acima da base da mesma árvore, ainda ≤ 19.</summary>
+    public static int CanopyOrderFromY(float worldY)
+    {
+        return Mathf.Min(ActorOrderFromY(worldY) + 1, ActorOrderMax);
+    }
+
+    public static int ShadowOrderFromY(float worldY)
+    {
+        return Mathf.Max(ActorOrderFromY(worldY) - 1, 0);
+    }
+
+    // Compat: nomes antigos usados por outros scripts.
+    public const int ActorSortOrder = ActorOrderCenter;
+    public const int CanopySortOrder = ActorOrderCenter + 1;
+    public const int ShadowSortOrder = ActorOrderCenter - 1;
 }

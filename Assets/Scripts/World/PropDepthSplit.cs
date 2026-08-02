@@ -53,13 +53,14 @@ public class PropDepthSplit : MonoBehaviour
         if (baseRenderer == null)
             return;
 
+        float y = transform.position.y;
         baseRenderer.sortingLayerID = 0;
-        baseRenderer.sortingOrder = WorldDepth.ActorSortOrder;
+        baseRenderer.sortingOrder = WorldDepth.ActorOrderFromY(y);
         baseRenderer.spriteSortPoint = SpriteSortPoint.Pivot;
         if (topRenderer != null && topRenderer.enabled)
         {
             topRenderer.sortingLayerID = 0;
-            topRenderer.sortingOrder = WorldDepth.CanopySortOrder;
+            topRenderer.sortingOrder = WorldDepth.CanopyOrderFromY(y);
             topRenderer.spriteSortPoint = SpriteSortPoint.Pivot;
         }
     }

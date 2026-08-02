@@ -3,9 +3,10 @@ using UnityEngine.Rendering;
 
 /// <summary>
 /// Árvore em duas camadas (mesmo sprite, clip por UV):
-/// Base (sombra + tronco) — colisão; Order = ActorSortOrder (Y-sort com player).
-/// Copa (folhas) — Order = CanopySortOrder (player por baixo das folhas).
-/// Overlays da cena com Order 20+ ficam na frente. Neblina (~32000) cobre as folhas.
+/// Base = sombra+tronco (colisão). Copa = folhas.
+/// Sort pelo pé da árvore (não o centro) — player na frente do tronco fica na frente
+/// das folhas baixas; só atrás das folhas quando passa o pé da árvore.
+/// Orders 0–19 respeitam overlays Order 20+ e a neblina.
 /// </summary>
 [DisallowMultipleComponent]
 [RequireComponent(typeof(SpriteRenderer))]
@@ -14,8 +15,8 @@ public class SeasonalTree : MonoBehaviour
     public const string CanopyChildName = "Canopy";
     public const string FoliageSortingLayer = "Foliage";
 
-    /// <summary>Inclui pontas da sombra/copa baixa na base — player não fica atrás delas.</summary>
-    private const float BaseHeightFraction = 0.48f;
+    /// <summary>Linha tronco→copa (~fim do tronco). Não usar 0.48 — cobria o player cedo demais.</summary>
+    private const float BaseHeightFraction = 0.36f;
 
     private static Shader clipShader;
 
@@ -89,18 +90,23 @@ public class SeasonalTree : MonoBehaviour
         if (baseRenderer == null)
             EnsureRenderers();
 
-        // Default layer + orders baixos: Order 20+ da cena fica na frente; neblina também.
+        // Pé do sprite (não o centro): evita “entrar na copa” ainda no tronco.
+        float footY = GetFootWorldY();
+        int baseOrder = WorldDepth.ActorOrderFromY(footY);
+        int canopyOrder = WorldDepth.CanopyOrderFromY(footY);
+        int shadowOrder = WorldDepth.ShadowOrderFromY(footY);
+
         if (baseRenderer != null)
         {
             baseRenderer.sortingLayerID = 0;
-            baseRenderer.sortingOrder = WorldDepth.ActorSortOrder;
+            baseRenderer.sortingOrder = baseOrder;
             baseRenderer.spriteSortPoint = SpriteSortPoint.Pivot;
         }
 
         if (canopyRenderer != null && canopyRenderer.enabled)
         {
             canopyRenderer.sortingLayerID = 0;
-            canopyRenderer.sortingOrder = WorldDepth.CanopySortOrder;
+            canopyRenderer.sortingOrder = canopyOrder;
             canopyRenderer.spriteSortPoint = SpriteSortPoint.Pivot;
         }
 
@@ -108,8 +114,19 @@ public class SeasonalTree : MonoBehaviour
         if (sombra != null && sombra.TryGetComponent(out SpriteRenderer sombraRenderer))
         {
             sombraRenderer.sortingLayerID = 0;
-            sombraRenderer.sortingOrder = WorldDepth.ShadowSortOrder;
+            sombraRenderer.sortingOrder = shadowOrder;
         }
+    }
+
+    private float GetFootWorldY()
+    {
+        if (trunkCollider != null && trunkCollider.enabled)
+            return trunkCollider.bounds.min.y;
+
+        if (baseRenderer != null && baseRenderer.sprite != null)
+            return baseRenderer.bounds.min.y;
+
+        return transform.position.y;
     }
 
     private void OnClockChanged()
