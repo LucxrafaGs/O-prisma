@@ -17,6 +17,7 @@ public static class PlayModeStaticReset
         GameSessionSave.ClearInstanceForDomainReload();
         DappledSunLighting.ClearInstanceForDomainReload();
         RainPixelTextures.ClearForDomainReload();
+        EchoSilhouetteFactory.ClearForDomainReload();
         PrismaBackpackMenu.ClearOpenFlag();
         DevModeController.ClearOpenFlag();
     }
