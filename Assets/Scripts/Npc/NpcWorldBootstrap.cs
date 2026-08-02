@@ -137,6 +137,8 @@ public class NpcWorldBootstrap : MonoBehaviour
 
         if (GetComponent<DappledSunLighting>() == null)
             gameObject.AddComponent<DappledSunLighting>();
+
+        SoundsOfTheWorld.EnsureInScene();
     }
 
     private static void EnsureSupportObjects()

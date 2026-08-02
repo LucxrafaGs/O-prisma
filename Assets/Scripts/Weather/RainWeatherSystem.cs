@@ -299,6 +299,7 @@ public class RainWeatherSystem : MonoBehaviour
         SetEmitterActive(rainParticles, true);
         SetEmitterActive(splashParticles, true);
         ApplyRainIntensity();
+        WorldAudioEvents.NotifyRainStarted();
 
         if (thunderRoutine != null)
             StopCoroutine(thunderRoutine);
@@ -323,6 +324,7 @@ public class RainWeatherSystem : MonoBehaviour
         SetEmitterActive(rainParticles, true);
         SetEmitterActive(splashParticles, true);
         ApplyRainIntensity();
+        WorldAudioEvents.NotifyRainStarted();
 
         if (thunderRoutine != null)
             StopCoroutine(thunderRoutine);
@@ -372,6 +374,7 @@ public class RainWeatherSystem : MonoBehaviour
 
     private void FinishRainOff()
     {
+        bool wasRaining = isRaining || rainIntensity > 0.01f;
         isRaining = false;
         DayNightLighting.WeatherAmbientMultiplier = 1f;
         DayNightLighting.WeatherAmbientTint = Color.white;
@@ -387,6 +390,9 @@ public class RainWeatherSystem : MonoBehaviour
 
         if (flashRenderer != null && dryThunderRoutine == null)
             flashRenderer.color = new Color(1f, 1f, 1f, 0f);
+
+        if (wasRaining)
+            WorldAudioEvents.NotifyRainStopped();
     }
 
     private void StopFogImmediate()
@@ -954,6 +960,8 @@ public class RainWeatherSystem : MonoBehaviour
 
     private IEnumerator PlayThunderFlash(bool strong = false)
     {
+        WorldAudioEvents.NotifyThunder(strong);
+
         int bursts = strong ? Random.Range(2, 5) : Random.Range(1, 4);
         float peakScale = strong ? 1.35f : 1f;
         for (int i = 0; i < bursts; i++)

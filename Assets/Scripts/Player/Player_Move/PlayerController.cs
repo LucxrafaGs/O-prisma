@@ -49,6 +49,12 @@ public class PlayerController : MonoBehaviour
     private int toeTapFrameIndex;
     private float toeTapFrameTimer;
 
+    /// <summary>True enquanto há input de movimento (passos / SFX).</summary>
+    public bool IsMoving => ReadMovementInput().sqrMagnitude > 0.01f;
+
+    /// <summary>True se está correndo (Shift) com movimento.</summary>
+    public bool IsRunning => IsMoving && IsRunHeld();
+
     private ContactFilter2D solidFilter;
     private readonly RaycastHit2D[] castHits = new RaycastHit2D[12];
     private readonly Collider2D[] overlapHits = new Collider2D[12];
