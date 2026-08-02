@@ -19,13 +19,13 @@ public class PlayerFlashlight : MonoBehaviour
     [SerializeField] [Range(10f, 120f)] private float outerSpotAngle = 70f;
     [SerializeField] [Range(5f, 90f)] private float innerSpotAngle = 28f;
 
-    // Pivot nos pés; Y ~0.12 ≈ mão/cintura com escala 2.8 do personagem.
+    // Pivot nos pés; offsets baixos e perto do corpo (mão).
     [Header("Mão (local, pivot nos pés)")]
-    [SerializeField] private Vector2 handOffsetLeft = new(-0.22f, 0.12f);
-    [SerializeField] private Vector2 handOffsetRight = new(0.22f, 0.12f);
-    [SerializeField] private Vector2 handOffsetDown = new(0.08f, 0.1f);
+    [SerializeField] private Vector2 handOffsetLeft = new(-0.12f, 0.05f);
+    [SerializeField] private Vector2 handOffsetRight = new(0.12f, 0.05f);
+    [SerializeField] private Vector2 handOffsetDown = new(0.04f, 0.04f);
     [Tooltip("Costas: origem baixa sob o corpo para o feixe sair por baixo do sprite.")]
-    [SerializeField] private Vector2 handOffsetUp = new(0f, 0.06f);
+    [SerializeField] private Vector2 handOffsetUp = new(0f, 0.03f);
 
     private Light2D spotLight;
     private Transform lightTransform;
