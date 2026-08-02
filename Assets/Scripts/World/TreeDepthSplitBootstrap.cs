@@ -16,7 +16,6 @@ public class TreeDepthSplitBootstrap : MonoBehaviour
         appliedThisLoad = false;
         ApplyAll();
 
-        // Segunda passagem no 1º frame — cobre árvores spawnadas no Awake de outros sistemas.
         GameObject runner = new("TreeDepthSplitRunner");
         Object.DontDestroyOnLoad(runner);
         runner.hideFlags = HideFlags.HideAndDontSave;
@@ -66,12 +65,39 @@ public class TreeDepthSplitBootstrap : MonoBehaviour
         else if (!appliedThisLoad)
         {
             Debug.LogWarning(
-                "Prisma: nenhuma árvore encontrada (procure World 2 → Arvores). " +
-                "Salve a SampleScene se World 2 só existir no editor.");
+                "Prisma: nenhuma árvore encontrada (pasta Arvores / objetos Arvore*).");
         }
 
         appliedThisLoad = true;
         return added;
+    }
+
+    private static bool IsArvoresFolderName(string n)
+    {
+        return n == "Arvores" || n == "Árvores" ||
+               n == "Arvores 2" || n == "Árvores 2";
+    }
+
+    /// <summary>
+    /// Instância de árvore (Arvore, Arvore (1), Tree_x) — NÃO a pasta "Arvores".
+    /// Bug anterior: "Arvores".StartsWith("Arvore") era true e excluía todos os filhos.
+    /// </summary>
+    private static bool IsTreeInstanceName(string n)
+    {
+        if (string.IsNullOrEmpty(n) || IsArvoresFolderName(n))
+            return false;
+
+        if (n.StartsWith("Tree_"))
+            return true;
+
+        // "Arvore" / "Arvore (27)" — mas não "Arvores..."
+        if (n.StartsWith("Arvore") && !n.StartsWith("Arvores"))
+            return true;
+
+        if (n.StartsWith("Árvore") && !n.StartsWith("Árvores"))
+            return true;
+
+        return false;
     }
 
     private static bool IsTreeCandidate(GameObject go)
@@ -85,13 +111,9 @@ public class TreeDepthSplitBootstrap : MonoBehaviour
             name == PropDepthSplit.TopChildName)
             return false;
 
-        // Filho Canopy / sombra não é árvore-raiz.
-        if (go.transform.parent != null)
-        {
-            string parentName = go.transform.parent.name;
-            if (parentName.StartsWith("Arvore") || parentName.StartsWith("Árvore") || parentName.StartsWith("Tree_"))
-                return false;
-        }
+        // Evita aplicar no Canopy/Sombra filho de uma árvore (não na pasta Arvores).
+        if (go.transform.parent != null && IsTreeInstanceName(go.transform.parent.name))
+            return false;
 
         SpriteRenderer sr = go.GetComponent<SpriteRenderer>();
         if (sr == null || sr.sprite == null)
@@ -104,38 +126,15 @@ public class TreeDepthSplitBootstrap : MonoBehaviour
         if (go.GetComponent<ElasticFoliage>() != null)
             return false;
 
-        bool nameLooksLikeTree =
-            name.StartsWith("Arvore") ||
-            name.StartsWith("Árvore") ||
-            name.StartsWith("Tree_");
+        // Filho direto da pasta Arvores
+        if (go.transform.parent != null && IsArvoresFolderName(go.transform.parent.name))
+            return true;
 
-        bool underArvoresFolder = false;
-        Transform t = go.transform;
-        while (t != null)
-        {
-            string n = t.name;
-            if (n == "Arvores" || n == "Árvores" || n == "Arvores 2" || n == "Árvores 2")
-            {
-                underArvoresFolder = true;
-                break;
-            }
-
-            t = t.parent;
-        }
-
-        // Direto sob pasta Arvores, ou qualquer "Arvore*" no World.
-        if (underArvoresFolder)
-            return go.transform.parent != null &&
-                   (go.transform.parent.name == "Arvores" ||
-                    go.transform.parent.name == "Árvores" ||
-                    go.transform.parent.name == "Arvores 2" ||
-                    go.transform.parent.name == "Árvores 2");
-
-        if (!nameLooksLikeTree)
+        // Qualquer Arvore* / Tree_* sob World
+        if (!IsTreeInstanceName(name))
             return false;
 
-        // Arvore* solta sob World / World 2
-        t = go.transform;
+        Transform t = go.transform;
         while (t != null)
         {
             if (t.name == "World" || t.name.StartsWith("World "))
