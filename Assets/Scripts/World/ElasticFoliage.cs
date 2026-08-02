@@ -11,7 +11,7 @@ using UnityEngine.Rendering;
 public class ElasticFoliage : MonoBehaviour
 {
     private const float BaseHeightFraction = 0.36f;
-    private const int CanopySortBoost = 1;
+    private const int CanopySortBoost = 5000;
 
     private static Shader clipShader;
 
@@ -85,7 +85,30 @@ public class ElasticFoliage : MonoBehaviour
         int order = WorldDepth.OrderFromY(transform.position.y);
         baseRenderer.sortingOrder = order;
         if (canopyRenderer != null && canopyRenderer.enabled)
-            canopyRenderer.sortingOrder = order + CanopySortBoost;
+        {
+            int foliageId = SortingLayer.NameToID(SeasonalTree.FoliageSortingLayer);
+            bool hasFoliage = false;
+            SortingLayer[] layers = SortingLayer.layers;
+            for (int i = 0; i < layers.Length; i++)
+            {
+                if (layers[i].name == SeasonalTree.FoliageSortingLayer)
+                {
+                    foliageId = layers[i].id;
+                    hasFoliage = true;
+                    break;
+                }
+            }
+
+            if (hasFoliage)
+            {
+                canopyRenderer.sortingLayerID = foliageId;
+                canopyRenderer.sortingOrder = order;
+            }
+            else
+            {
+                canopyRenderer.sortingOrder = order + CanopySortBoost;
+            }
+        }
     }
 
     private void OnTriggerEnter2D(Collider2D other)

@@ -3,22 +3,23 @@ using UnityEngine.Rendering;
 
 /// <summary>
 /// Árvore em duas camadas (mesmo sprite, clip por UV):
-/// Base (sombra + tronco) — colisão + Y-sort.
-/// Copa (folhas) — sem colisão; na frente do personagem só quando ele está atrás do pé da árvore.
-/// Na frente do tronco o personagem desenha na frente das folhas também.
+/// Base (tronco/sombra) — colisão + Y-sort no pé (mesmo eixo do player/NPC).
+/// Copa (folhas) — sorting layer Foliage, sempre na frente de personagens.
 /// </summary>
 [DisallowMultipleComponent]
 [RequireComponent(typeof(SpriteRenderer))]
 public class SeasonalTree : MonoBehaviour
 {
+    public const string FoliageSortingLayer = "Foliage";
+    public const string CanopyChildName = "Canopy";
+
     private const float BaseHeightFraction = 0.34f;
-    /// <summary>
-    /// +1 mantém a copa acima do tronco no mesmo pé; NÃO usar +5000 —
-    /// isso fazia as folhas cobrirem o player mesmo na frente da árvore.
-    /// </summary>
-    private const int CanopySortBoost = 1;
+    /// <summary>Fallback se a layer Foliage não existir — garante folhas acima do CharacterDepthSort.</summary>
+    private const int CanopySortBoost = 5000;
 
     private static Shader clipShader;
+    private static int foliageLayerId = int.MinValue;
+    private static bool foliageLayerResolved;
 
     [SerializeField] private string treeTypeId;
     [SerializeField] private Sprite springLight;
@@ -43,23 +44,7 @@ public class SeasonalTree : MonoBehaviour
 
     private void Awake()
     {
-        RemoveLegacyWholeTreeSorting();
-        EnsureRenderers();
-        SeedSpriteFromRendererIfNeeded();
-        SyncDryFlagFromCatalog();
-        ApplySeason(GetCurrentSeason(), force: true);
-        EnsureTrunkCollider();
-    }
-
-    /// <summary>
-    /// Árvores já colocadas na cena (World/Arvores): usa o sprite atual sem trocar arte nem posição.
-    /// </summary>
-    private void SeedSpriteFromRendererIfNeeded()
-    {
-        if (springLight != null)
-            return;
-        if (baseRenderer != null && baseRenderer.sprite != null)
-            springLight = baseRenderer.sprite;
+        SetupTree();
     }
 
     private void OnEnable()
@@ -67,7 +52,7 @@ public class SeasonalTree : MonoBehaviour
         GameTimeClock.OnTimeChanged += OnClockChanged;
         GameTimeClock.OnDayStarted += OnClockChanged;
         GameTimeClock.OnSeasonChanged += OnClockChanged;
-        ApplySeason(GetCurrentSeason(), force: true);
+        SetupTree();
     }
 
     private void OnDisable()
@@ -77,19 +62,105 @@ public class SeasonalTree : MonoBehaviour
         GameTimeClock.OnSeasonChanged -= OnClockChanged;
     }
 
+    /// <summary>Reaplica split/colisão sem mover o transform (usado pelo bootstrap).</summary>
+    public void SetupTree()
+    {
+        RemoveLegacyWholeTreeSorting();
+        EnsureRenderers();
+        SeedSpriteFromRendererIfNeeded();
+        SyncDryFlagFromCatalog();
+        ApplySeason(GetCurrentSeason(), force: true);
+        EnsureTrunkCollider();
+        ApplySorting();
+    }
+
+    private void SeedSpriteFromRendererIfNeeded()
+    {
+        if (springLight != null)
+            return;
+        if (baseRenderer != null && baseRenderer.sprite != null)
+            springLight = baseRenderer.sprite;
+    }
+
     private void LateUpdate()
     {
-        int order = WorldDepth.OrderFromY(transform.position.y);
+        ApplySorting();
+    }
+
+    private void ApplySorting()
+    {
+        if (baseRenderer == null)
+            EnsureRenderers();
+
+        // Pé do sprite em world — não o centro do transform (árvores da cena usam Center).
+        int order = WorldDepth.OrderFromY(GetFootWorldY());
+
         if (baseRenderer != null)
+        {
+            baseRenderer.sortingLayerID = 0; // Default
             baseRenderer.sortingOrder = order;
+            baseRenderer.spriteSortPoint = SpriteSortPoint.Pivot;
+        }
 
-        if (canopyRenderer != null)
-            canopyRenderer.sortingOrder = order + CanopySortBoost;
+        if (canopyRenderer != null && canopyRenderer.enabled)
+        {
+            int foliageId = ResolveFoliageLayerId();
+            if (foliageId != 0)
+            {
+                canopyRenderer.sortingLayerID = foliageId;
+                canopyRenderer.sortingOrder = order; // Y entre folhas; layer já fica acima dos personagens
+            }
+            else
+            {
+                canopyRenderer.sortingLayerID = 0;
+                canopyRenderer.sortingOrder = order + CanopySortBoost;
+            }
 
-        // Sombra do artist fica logo atrás do tronco no mesmo pé da árvore.
+            canopyRenderer.spriteSortPoint = SpriteSortPoint.Pivot;
+        }
+
         Transform sombra = transform.Find("Sombra");
         if (sombra != null && sombra.TryGetComponent(out SpriteRenderer sombraRenderer))
+        {
+            sombraRenderer.sortingLayerID = 0;
             sombraRenderer.sortingOrder = order - 1;
+        }
+    }
+
+    private float GetFootWorldY()
+    {
+        if (baseRenderer != null && baseRenderer.sprite != null)
+            return baseRenderer.bounds.min.y;
+        return transform.position.y;
+    }
+
+    private static int ResolveFoliageLayerId()
+    {
+        if (foliageLayerResolved)
+            return foliageLayerId;
+
+        foliageLayerResolved = true;
+        foliageLayerId = SortingLayer.NameToID(FoliageSortingLayer);
+        // NameToID returns 0 for Default when name missing — distinguish by checking layers list.
+        bool found = false;
+        SortingLayer[] layers = SortingLayer.layers;
+        for (int i = 0; i < layers.Length; i++)
+        {
+            if (layers[i].name == FoliageSortingLayer)
+            {
+                found = true;
+                foliageLayerId = layers[i].id;
+                break;
+            }
+        }
+
+        if (!found)
+        {
+            foliageLayerId = 0;
+            Debug.LogWarning("Prisma: Sorting Layer 'Foliage' não encontrada — usando order +5000 na Default.");
+        }
+
+        return foliageLayerId;
     }
 
     private void OnClockChanged()
@@ -117,11 +188,7 @@ public class SeasonalTree : MonoBehaviour
         preferYellowInAutumn = yellowInAutumn;
         usesDryInWinter = type.UsesDryInWinter;
         name = $"Tree_{type.Id}";
-
-        RemoveLegacyWholeTreeSorting();
-        EnsureRenderers();
-        ApplySeason(GetCurrentSeason(), force: true);
-        EnsureTrunkCollider();
+        SetupTree();
     }
 
     public void ApplySeason(GameTimeClock.Season season, bool force)
@@ -133,6 +200,7 @@ public class SeasonalTree : MonoBehaviour
         EnsureRenderers();
         ApplyFullSprite(ResolveSprite(season));
         EnsureTrunkCollider();
+        ApplySorting();
     }
 
     private void ApplyFullSprite(Sprite full)
@@ -144,10 +212,7 @@ public class SeasonalTree : MonoBehaviour
         canopyTransform.localPosition = Vector3.zero;
 
         baseRenderer.sprite = full;
-        baseRenderer.spriteSortPoint = SpriteSortPoint.Pivot;
         canopyRenderer.sprite = full;
-        canopyRenderer.spriteSortPoint = SpriteSortPoint.Pivot;
-
         ApplyClipMaterials(full);
     }
 
@@ -156,7 +221,10 @@ public class SeasonalTree : MonoBehaviour
         Shader shader = GetClipShader();
         if (shader == null)
         {
-            baseRenderer.sharedMaterial = null;
+            Debug.LogError(
+                $"Prisma: shader {SceneLitMaterial.TreeClipShaderName} ausente em '{name}'. Copa desativada.",
+                this);
+            baseRenderer.sharedMaterial = SceneLitMaterial.GetLitMaterial();
             canopyRenderer.enabled = false;
             return;
         }
@@ -170,6 +238,9 @@ public class SeasonalTree : MonoBehaviour
 
         baseRenderer.sharedMaterial = baseMaterial;
         canopyRenderer.sharedMaterial = canopyMaterial;
+        canopyRenderer.color = baseRenderer.color;
+        canopyRenderer.flipX = baseRenderer.flipX;
+        canopyRenderer.flipY = baseRenderer.flipY;
     }
 
     private void EnsureLayerMaterials(Shader shader)
@@ -218,8 +289,16 @@ public class SeasonalTree : MonoBehaviour
 
     private static Shader GetClipShader()
     {
+        if (clipShader != null)
+            return clipShader;
+
+#if UNITY_EDITOR
+        clipShader = UnityEditor.AssetDatabase.LoadAssetAtPath<Shader>(
+            "Assets/Scripts/World/SpriteLitVerticalClip.shader");
+#endif
         if (clipShader == null)
             clipShader = Shader.Find(SceneLitMaterial.TreeClipShaderName);
+
         return clipShader;
     }
 
@@ -233,7 +312,6 @@ public class SeasonalTree : MonoBehaviour
 
     private Sprite ResolveSprite(GameTimeClock.Season season)
     {
-        // Primavera = verde mais escuro; Verão = verde mais claro (todas iguais).
         return season switch
         {
             GameTimeClock.Season.Primavera => First(summerDark, springLight),
@@ -267,10 +345,10 @@ public class SeasonalTree : MonoBehaviour
         if (baseRenderer == null)
             baseRenderer = gameObject.AddComponent<SpriteRenderer>();
 
-        Transform existing = transform.Find("Canopy");
+        Transform existing = transform.Find(CanopyChildName);
         if (existing == null)
         {
-            GameObject canopyObject = new("Canopy");
+            GameObject canopyObject = new(CanopyChildName);
             canopyTransform = canopyObject.transform;
             canopyTransform.SetParent(transform, false);
             canopyRenderer = canopyObject.AddComponent<SpriteRenderer>();
@@ -298,7 +376,6 @@ public class SeasonalTree : MonoBehaviour
             trunkCollider = gameObject.AddComponent<BoxCollider2D>();
 
         Bounds bounds = sprite.bounds;
-        // Escala com o sprite (árvores grandes da cena ~20u) sem engolir a área das folhas.
         float width = Mathf.Clamp(bounds.size.x * 0.22f, 0.18f, Mathf.Max(0.85f, bounds.size.x * 0.12f));
         float height = Mathf.Clamp(bounds.size.y * BaseHeightFraction * 0.28f, 0.12f, Mathf.Max(0.35f, bounds.size.y * 0.07f));
 

@@ -1,88 +1,153 @@
 using UnityEngine;
 
 /// <summary>
-/// Aplica a regra de profundidade das árvores já posicionadas em World/Arvores:
-/// tronco colide + Y-sort; folhas por cima só quando o personagem está atrás.
-/// Não altera posição, escala nem rotação.
-/// Player e NPCs já usam <see cref="CharacterDepthSort"/> (mesmo eixo Y).
+/// Aplica <see cref="SeasonalTree"/> em todas as árvores da cena (World / World 2 / Arvores),
+/// sem alterar posição. Player e NPCs usam <see cref="CharacterDepthSort"/> no mesmo eixo Y;
+/// a copa vai para a sorting layer Foliage (sempre na frente).
 /// </summary>
 [DefaultExecutionOrder(-42)]
 public class TreeDepthSplitBootstrap : MonoBehaviour
 {
+    private static bool appliedThisLoad;
+
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
     private static void Bootstrap()
     {
+        appliedThisLoad = false;
         ApplyAll();
+
+        // Segunda passagem no 1º frame — cobre árvores spawnadas no Awake de outros sistemas.
+        GameObject runner = new("TreeDepthSplitRunner");
+        Object.DontDestroyOnLoad(runner);
+        runner.hideFlags = HideFlags.HideAndDontSave;
+        runner.AddComponent<TreeDepthSplitBootstrap>();
+    }
+
+    private void Start()
+    {
+        ApplyAll();
+        Destroy(gameObject);
     }
 
     public static int ApplyAll()
     {
         int added = 0;
-        Transform[] roots = FindArvoresRoots();
-        for (int r = 0; r < roots.Length; r++)
+        int refreshed = 0;
+
+        SpriteRenderer[] renderers = Object.FindObjectsByType<SpriteRenderer>(FindObjectsInactive.Exclude);
+        for (int i = 0; i < renderers.Length; i++)
         {
-            Transform root = roots[r];
-            if (root == null)
+            SpriteRenderer renderer = renderers[i];
+            if (renderer == null)
                 continue;
 
-            for (int i = 0; i < root.childCount; i++)
-            {
-                Transform child = root.GetChild(i);
-                if (child == null)
-                    continue;
+            GameObject go = renderer.gameObject;
+            if (!IsTreeCandidate(go))
+                continue;
 
-                if (ApplyToTree(child.gameObject))
-                    added++;
+            SeasonalTree existing = go.GetComponent<SeasonalTree>();
+            if (existing != null)
+            {
+                existing.SetupTree();
+                refreshed++;
+                continue;
             }
+
+            if (ApplyNew(go))
+                added++;
         }
 
-        if (added > 0)
-            Debug.Log($"Prisma: SeasonalTree aplicado em {added} árvores (posição preservada; tronco colide; folhas Y-sort).");
+        if (added > 0 || refreshed > 0)
+        {
+            Debug.Log(
+                $"Prisma: árvores depth-split — novas={added}, atualizadas={refreshed} " +
+                "(folhas na layer Foliage; tronco colide; posições intactas).");
+        }
+        else if (!appliedThisLoad)
+        {
+            Debug.LogWarning(
+                "Prisma: nenhuma árvore encontrada (procure World 2 → Arvores). " +
+                "Salve a SampleScene se World 2 só existir no editor.");
+        }
 
+        appliedThisLoad = true;
         return added;
     }
 
-    private static Transform[] FindArvoresRoots()
-    {
-        Transform[] all = Object.FindObjectsByType<Transform>(FindObjectsInactive.Exclude);
-        System.Collections.Generic.List<Transform> roots = new(4);
-        for (int i = 0; i < all.Length; i++)
-        {
-            Transform t = all[i];
-            if (t == null || t.parent == null)
-                continue;
-
-            string n = t.name;
-            if (n == "Arvores" || n == "Árvores" || n == "Arvores 2" || n == "Árvores 2")
-                roots.Add(t);
-        }
-
-        return roots.ToArray();
-    }
-
-    private static bool ApplyToTree(GameObject go)
+    private static bool IsTreeCandidate(GameObject go)
     {
         if (go == null)
             return false;
 
-        // Filhos utilitários — nunca viram árvore.
-        if (go.name == "Sombra" || go.name == "Canopy" || go.name == PropDepthSplit.TopChildName)
+        string name = go.name;
+        if (name == "Sombra" ||
+            name == SeasonalTree.CanopyChildName ||
+            name == PropDepthSplit.TopChildName)
             return false;
 
-        SpriteRenderer renderer = go.GetComponent<SpriteRenderer>();
-        if (renderer == null || renderer.sprite == null)
+        // Filho Canopy / sombra não é árvore-raiz.
+        if (go.transform.parent != null)
+        {
+            string parentName = go.transform.parent.name;
+            if (parentName.StartsWith("Arvore") || parentName.StartsWith("Árvore") || parentName.StartsWith("Tree_"))
+                return false;
+        }
+
+        SpriteRenderer sr = go.GetComponent<SpriteRenderer>();
+        if (sr == null || sr.sprite == null)
             return false;
 
-        if (go.GetComponent<SeasonalTree>() != null)
-            return false;
-        if (go.GetComponent<ElasticFoliage>() != null)
-            return false;
         if (go.GetComponent<PlayerController>() != null)
             return false;
         if (go.GetComponent<NpcController>() != null)
             return false;
+        if (go.GetComponent<ElasticFoliage>() != null)
+            return false;
 
-        // Remove PropDepthSplit genérico se alguém aplicou antes — SeasonalTree é a regra das árvores.
+        bool nameLooksLikeTree =
+            name.StartsWith("Arvore") ||
+            name.StartsWith("Árvore") ||
+            name.StartsWith("Tree_");
+
+        bool underArvoresFolder = false;
+        Transform t = go.transform;
+        while (t != null)
+        {
+            string n = t.name;
+            if (n == "Arvores" || n == "Árvores" || n == "Arvores 2" || n == "Árvores 2")
+            {
+                underArvoresFolder = true;
+                break;
+            }
+
+            t = t.parent;
+        }
+
+        // Direto sob pasta Arvores, ou qualquer "Arvore*" no World.
+        if (underArvoresFolder)
+            return go.transform.parent != null &&
+                   (go.transform.parent.name == "Arvores" ||
+                    go.transform.parent.name == "Árvores" ||
+                    go.transform.parent.name == "Arvores 2" ||
+                    go.transform.parent.name == "Árvores 2");
+
+        if (!nameLooksLikeTree)
+            return false;
+
+        // Arvore* solta sob World / World 2
+        t = go.transform;
+        while (t != null)
+        {
+            if (t.name == "World" || t.name.StartsWith("World "))
+                return true;
+            t = t.parent;
+        }
+
+        return false;
+    }
+
+    private static bool ApplyNew(GameObject go)
+    {
         PropDepthSplit propSplit = go.GetComponent<PropDepthSplit>();
         if (propSplit != null)
         {
@@ -92,7 +157,8 @@ public class TreeDepthSplitBootstrap : MonoBehaviour
                 Object.DestroyImmediate(propSplit);
         }
 
-        go.AddComponent<SeasonalTree>();
+        SeasonalTree tree = go.AddComponent<SeasonalTree>();
+        tree.SetupTree();
         return true;
     }
 }
