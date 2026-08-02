@@ -90,22 +90,11 @@ public class ElasticFoliage : MonoBehaviour
         {
             canopyRenderer.sortingLayerID = 0;
             canopyRenderer.sortingOrder = WorldDepth.ActorOrderFromY(y);
-            EnsureCanopyShadowCaster();
+
+            ShadowCaster2D leftover = canopyRenderer.GetComponent<ShadowCaster2D>();
+            if (leftover != null)
+                Destroy(leftover);
         }
-    }
-
-    private void EnsureCanopyShadowCaster()
-    {
-        if (canopyRenderer == null)
-            return;
-
-        ShadowCaster2D caster = canopyRenderer.GetComponent<ShadowCaster2D>();
-        if (caster == null)
-            caster = canopyRenderer.gameObject.AddComponent<ShadowCaster2D>();
-
-        caster.useRendererSilhouette = true;
-        caster.castsShadows = true;
-        caster.selfShadows = true;
     }
 
     private void OnTriggerEnter2D(Collider2D other)

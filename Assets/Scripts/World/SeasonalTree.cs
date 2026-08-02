@@ -109,7 +109,11 @@ public class SeasonalTree : MonoBehaviour
             canopyRenderer.sortingLayerID = 0;
             canopyRenderer.sortingOrder = treeOrder; // igual à base — não cobrir cedo demais
             canopyRenderer.spriteSortPoint = SpriteSortPoint.Pivot;
-            EnsureCanopyShadowCaster();
+
+            // Remove casters de versões antigas da lanterna.
+            ShadowCaster2D leftover = canopyRenderer.GetComponent<ShadowCaster2D>();
+            if (leftover != null)
+                Destroy(leftover);
         }
 
         Transform sombra = transform.Find("Sombra");
@@ -118,21 +122,6 @@ public class SeasonalTree : MonoBehaviour
             sombraRenderer.sortingLayerID = 0;
             sombraRenderer.sortingOrder = shadowOrder;
         }
-    }
-
-    private void EnsureCanopyShadowCaster()
-    {
-        if (canopyRenderer == null)
-            return;
-
-        ShadowCaster2D caster = canopyRenderer.GetComponent<ShadowCaster2D>();
-        if (caster == null)
-            caster = canopyRenderer.gameObject.AddComponent<ShadowCaster2D>();
-
-        caster.useRendererSilhouette = true;
-        caster.castsShadows = true;
-        // selfShadows: luz atrás/sob a copa não “pinta” as folhas por cima.
-        caster.selfShadows = true;
     }
 
     /// <summary>Y do fim do tronco (onde a copa “começa” na lógica de profundidade).</summary>

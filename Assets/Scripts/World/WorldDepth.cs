@@ -11,8 +11,8 @@ public static class WorldDepth
     public const int ActorOrderCenter = 10;
     public const float ActorYPrecision = 4f;
 
-    /// <summary>Tilemap Colider (estátuas) — atrás do Y-sort de atores.</summary>
-    public const int StatueOrder = 0;
+    /// <summary>Tilemap Colider (estátuas) — sempre atrás do player/NPC (0–19).</summary>
+    public const int StatueOrder = -1;
 
     public const float Precision = 100f;
     public const int OrderBias = 15000;
