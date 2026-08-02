@@ -1,5 +1,6 @@
 using UnityEngine;
 using UnityEngine.Rendering;
+using UnityEngine.Rendering.Universal;
 
 /// <summary>
 /// Árvore em duas camadas (mesmo sprite, clip por UV):
@@ -108,6 +109,7 @@ public class SeasonalTree : MonoBehaviour
             canopyRenderer.sortingLayerID = 0;
             canopyRenderer.sortingOrder = treeOrder; // igual à base — não cobrir cedo demais
             canopyRenderer.spriteSortPoint = SpriteSortPoint.Pivot;
+            EnsureCanopyShadowCaster();
         }
 
         Transform sombra = transform.Find("Sombra");
@@ -116,6 +118,21 @@ public class SeasonalTree : MonoBehaviour
             sombraRenderer.sortingLayerID = 0;
             sombraRenderer.sortingOrder = shadowOrder;
         }
+    }
+
+    private void EnsureCanopyShadowCaster()
+    {
+        if (canopyRenderer == null)
+            return;
+
+        ShadowCaster2D caster = canopyRenderer.GetComponent<ShadowCaster2D>();
+        if (caster == null)
+            caster = canopyRenderer.gameObject.AddComponent<ShadowCaster2D>();
+
+        caster.useRendererSilhouette = true;
+        caster.castsShadows = true;
+        // selfShadows: luz atrás/sob a copa não “pinta” as folhas por cima.
+        caster.selfShadows = true;
     }
 
     /// <summary>Y do fim do tronco (onde a copa “começa” na lógica de profundidade).</summary>

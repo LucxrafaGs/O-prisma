@@ -1,45 +1,49 @@
 using UnityEngine;
 using UnityEngine.InputSystem;
+using UnityEngine.Rendering;
 using UnityEngine.Rendering.Universal;
 
 /// <summary>
-/// Lanterna: cone + halo. Origem forçada na mão (ignora offsets serializados antigos).
-/// De costas, o ponto fica baixo/atrás do torso para não ficar por cima da cabeça.
+/// Lanterna: cone + halo ancorados no corpo (bounds do sprite).
+/// De costas o ponto fica no torso baixo (sob o desenho do player).
+/// Shadows + casters nas copas evitam o feixe “por cima” das folhas quando estamos atrás.
 /// </summary>
 [DisallowMultipleComponent]
+[DefaultExecutionOrder(50)]
 public class PlayerFlashlight : MonoBehaviour
 {
     public const string LanternItemId = "lanterna";
 
-    // Locais (pivot nos pés). Valores baixos e colados no corpo — não usar SerializeField
-    // para o Unity não manter offsets antigos altos no componente da cena.
-    private static readonly Vector2 HandLeft = new(-0.04f, 0.035f);
-    private static readonly Vector2 HandRight = new(0.04f, 0.035f);
-    private static readonly Vector2 HandDown = new(0.02f, 0.03f);
-    private static readonly Vector2 HandUp = new(0f, 0.05f);
-
-    /// <summary>Puxa a origem para dentro do corpo (mais perto / para trás).</summary>
-    private const float BackInset = 0.06f;
-
     [Header("Cone (feixe)")]
     [SerializeField] private float outerRadius = 6.5f;
-    [SerializeField] private float innerRadius = 0.25f;
-    [SerializeField] private float intensity = 1.45f;
+    [SerializeField] private float innerRadius = 0.2f;
+    [SerializeField] private float intensity = 1.4f;
     [SerializeField] private Color lightColor = new(1f, 0.92f, 0.72f, 1f);
-    [SerializeField] [Range(10f, 120f)] private float outerSpotAngle = 70f;
-    [SerializeField] [Range(5f, 90f)] private float innerSpotAngle = 28f;
+    [SerializeField] [Range(10f, 120f)] private float outerSpotAngle = 68f;
+    [SerializeField] [Range(5f, 90f)] private float innerSpotAngle = 26f;
+    [SerializeField] [Range(0f, 1f)] private float shadowIntensity = 0.85f;
 
     [Header("Halo suave")]
-    [SerializeField] private float softOuterRadius = 2.2f;
-    [SerializeField] private float softInnerRadius = 0.15f;
-    [SerializeField] private float softIntensity = 0.5f;
-    [SerializeField] [Range(0.1f, 1f)] private float softFalloff = 0.78f;
+    [SerializeField] private float softOuterRadius = 2.0f;
+    [SerializeField] private float softInnerRadius = 0.12f;
+    [SerializeField] private float softIntensity = 0.45f;
+    [SerializeField] [Range(0.1f, 1f)] private float softFalloff = 0.8f;
+
+    // Fração da altura do sprite (pés=0, cabeça=1).
+    private const float HandHeightSide = 0.22f;
+    private const float HandHeightDown = 0.18f;
+    private const float HandHeightUp = 0.20f; // torso baixo — sob o sprite de costas
+    private const float HandSideInset = 0.28f; // 0=centro, 1=borda da mão
+    private const float ForwardNudge = 0.06f; // um pouco para frente
+    private const float DownNudge = 0.03f; // um pouco para baixo
 
     private Light2D spotLight;
     private Light2D softLight;
     private Transform lightTransform;
     private Transform softTransform;
     private PlayerController player;
+    private PlayerAppearance appearance;
+    private SortingGroup sortingGroup;
     private bool isOn;
 
     public bool IsOn => isOn;
@@ -47,6 +51,8 @@ public class PlayerFlashlight : MonoBehaviour
     private void Awake()
     {
         player = GetComponent<PlayerController>();
+        appearance = GetComponent<PlayerAppearance>();
+        sortingGroup = GetComponent<SortingGroup>();
         EnsureLight();
         SetEnabled(false);
         CharacterLitMaterial.ApplyToHierarchy(transform);
@@ -94,41 +100,105 @@ public class PlayerFlashlight : MonoBehaviour
             ? player.CurrentFacing
             : PlayerController.Facing.Down;
 
+        Vector3 origin = ComputeHandWorldPosition(facing);
         Vector2 forward = FacingToDirection(facing);
-        Vector2 hand = HandOffset(facing);
-        // Empurra a origem para trás / para dentro do sprite (mais perto do player).
-        Vector2 origin2 = hand - forward * BackInset;
 
-        // De costas: origem bem baixa no torso para o apex ficar sob o sprite, não na cabeça.
+        // Um pouco mais para baixo e para frente (pedido).
+        origin += (Vector3)(forward * ForwardNudge);
+        origin.y -= DownNudge;
+
+        // De costas: mantém o ponto no torso baixo (já em HandHeightUp) e
+        // atrás do sorting do player — lightOrder baixo + origem coberta pelo sprite.
         if (facing == PlayerController.Facing.Up)
-            origin2 = new Vector2(0f, 0.02f);
+        {
+            // Não sobe para a cabeça: trava Y no terço inferior do corpo.
+            if (TryGetBodyBounds(out Bounds body))
+            {
+                float maxY = Mathf.Lerp(body.min.y, body.max.y, 0.28f);
+                if (origin.y > maxY)
+                    origin.y = maxY;
+                origin.x = body.center.x;
+            }
+        }
 
-        lightTransform.localRotation = Quaternion.Euler(0f, 0f, FacingToZRotation(facing));
-        lightTransform.localPosition = new Vector3(origin2.x, origin2.y, 0f);
-        spotLight.lightOrder = facing == PlayerController.Facing.Up ? -2 : 0;
+        lightTransform.position = origin;
+        lightTransform.rotation = Quaternion.Euler(0f, 0f, FacingToZRotation(facing));
+
+        // Sincroniza “profundidade” do feixe com o Y-sort do player (vs. outras luzes).
+        int depth = sortingGroup != null
+            ? sortingGroup.sortingOrder
+            : WorldDepth.ActorOrderFromY(transform.position.y);
+        spotLight.lightOrder = facing == PlayerController.Facing.Up ? depth - 20 : depth;
 
         if (softTransform != null)
         {
-            // Halo um pouco mais no centro do corpo (ilumina o player).
-            Vector2 softPos = facing == PlayerController.Facing.Up
-                ? new Vector2(0f, 0.04f)
-                : origin2 * 0.5f;
-            softTransform.localPosition = new Vector3(softPos.x, softPos.y, 0f);
-            softTransform.localRotation = Quaternion.identity;
+            Vector3 softOrigin = origin;
+            if (facing == PlayerController.Facing.Up && TryGetBodyBounds(out Bounds bodySoft))
+                softOrigin = new Vector3(bodySoft.center.x, Mathf.Lerp(bodySoft.min.y, bodySoft.max.y, 0.22f), 0f);
+
+            softTransform.position = softOrigin;
+            softTransform.rotation = Quaternion.identity;
             if (softLight != null)
-                softLight.lightOrder = facing == PlayerController.Facing.Up ? -3 : -1;
+                softLight.lightOrder = spotLight.lightOrder - 1;
         }
     }
 
-    private static Vector2 HandOffset(PlayerController.Facing facing)
+    private Vector3 ComputeHandWorldPosition(PlayerController.Facing facing)
+    {
+        if (!TryGetBodyBounds(out Bounds body))
+        {
+            Vector2 fallback = (Vector2)transform.position + HandOffsetFallback(facing);
+            return fallback;
+        }
+
+        float heightT = facing switch
+        {
+            PlayerController.Facing.Up => HandHeightUp,
+            PlayerController.Facing.Down => HandHeightDown,
+            _ => HandHeightSide
+        };
+
+        float y = Mathf.Lerp(body.min.y, body.max.y, heightT);
+        float x = body.center.x;
+
+        switch (facing)
+        {
+            case PlayerController.Facing.Left:
+                x = Mathf.Lerp(body.center.x, body.min.x, HandSideInset);
+                break;
+            case PlayerController.Facing.Right:
+                x = Mathf.Lerp(body.center.x, body.max.x, HandSideInset);
+                break;
+            case PlayerController.Facing.Down:
+                x = Mathf.Lerp(body.center.x, body.max.x, 0.15f);
+                break;
+            case PlayerController.Facing.Up:
+                // Centro do corpo, baixo — o sprite cobre o ponto.
+                x = body.center.x;
+                break;
+        }
+
+        return new Vector3(x, y, 0f);
+    }
+
+    private bool TryGetBodyBounds(out Bounds bounds)
+    {
+        bounds = default;
+        SpriteRenderer body = appearance != null ? appearance.BodyRenderer : null;
+        if (body == null || body.sprite == null)
+            return false;
+        bounds = body.bounds;
+        return true;
+    }
+
+    private static Vector2 HandOffsetFallback(PlayerController.Facing facing)
     {
         return facing switch
         {
-            PlayerController.Facing.Left => HandLeft,
-            PlayerController.Facing.Right => HandRight,
-            PlayerController.Facing.Up => HandUp,
-            PlayerController.Facing.Down => HandDown,
-            _ => HandDown
+            PlayerController.Facing.Left => new Vector2(-0.15f, 0.35f),
+            PlayerController.Facing.Right => new Vector2(0.15f, 0.35f),
+            PlayerController.Facing.Up => new Vector2(0f, 0.25f),
+            _ => new Vector2(0.05f, 0.3f)
         };
     }
 
@@ -204,8 +274,10 @@ public class PlayerFlashlight : MonoBehaviour
         light.pointLightOuterRadius = outerRadius;
         light.pointLightInnerAngle = Mathf.Clamp(innerSpotAngle, 5f, outerSpotAngle);
         light.pointLightOuterAngle = Mathf.Clamp(outerSpotAngle, 10f, 120f);
-        light.falloffIntensity = 0.45f;
+        light.falloffIntensity = 0.5f;
         light.overlapOperation = Light2D.OverlapOperation.AlphaBlend;
+        light.shadowsEnabled = true;
+        light.shadowIntensity = shadowIntensity;
     }
 
     private void ConfigureSoft(Light2D light)
@@ -219,7 +291,8 @@ public class PlayerFlashlight : MonoBehaviour
         light.pointLightOuterAngle = 360f;
         light.falloffIntensity = softFalloff;
         light.overlapOperation = Light2D.OverlapOperation.AlphaBlend;
-        light.lightOrder = -1;
+        light.shadowsEnabled = true;
+        light.shadowIntensity = shadowIntensity * 0.65f;
     }
 }
 
