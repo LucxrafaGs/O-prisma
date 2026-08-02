@@ -2,7 +2,7 @@ using UnityEngine;
 
 /// <summary>
 /// Aplica <see cref="PropDepthSplit"/> em props da cena com SpriteRenderer + Collider2D
-/// (bancos, lixeiras, jarros, casas, etc.). Não mexe em árvores/folhagem/postes.
+/// (bancos, lixeiras, jarros, casas, etc.). Árvores ficam com <see cref="TreeDepthSplitBootstrap"/>.
 /// </summary>
 [DefaultExecutionOrder(-40)]
 public class PropDepthSplitBootstrap : MonoBehaviour

@@ -2,16 +2,21 @@ using UnityEngine;
 using UnityEngine.Rendering;
 
 /// <summary>
-/// Árvore sazonal em duas camadas (mesmo sprite, clip por UV):
-/// Base (sombra + tronco) — personagem na frente.
-/// Copa (folhas) — personagem sempre atrás.
+/// Árvore em duas camadas (mesmo sprite, clip por UV):
+/// Base (sombra + tronco) — colisão + Y-sort.
+/// Copa (folhas) — sem colisão; na frente do personagem só quando ele está atrás do pé da árvore.
+/// Na frente do tronco o personagem desenha na frente das folhas também.
 /// </summary>
 [DisallowMultipleComponent]
 [RequireComponent(typeof(SpriteRenderer))]
 public class SeasonalTree : MonoBehaviour
 {
     private const float BaseHeightFraction = 0.34f;
-    private const int CanopySortBoost = 5000;
+    /// <summary>
+    /// +1 mantém a copa acima do tronco no mesmo pé; NÃO usar +5000 —
+    /// isso fazia as folhas cobrirem o player mesmo na frente da árvore.
+    /// </summary>
+    private const int CanopySortBoost = 1;
 
     private static Shader clipShader;
 
@@ -40,9 +45,21 @@ public class SeasonalTree : MonoBehaviour
     {
         RemoveLegacyWholeTreeSorting();
         EnsureRenderers();
+        SeedSpriteFromRendererIfNeeded();
         SyncDryFlagFromCatalog();
         ApplySeason(GetCurrentSeason(), force: true);
         EnsureTrunkCollider();
+    }
+
+    /// <summary>
+    /// Árvores já colocadas na cena (World/Arvores): usa o sprite atual sem trocar arte nem posição.
+    /// </summary>
+    private void SeedSpriteFromRendererIfNeeded()
+    {
+        if (springLight != null)
+            return;
+        if (baseRenderer != null && baseRenderer.sprite != null)
+            springLight = baseRenderer.sprite;
     }
 
     private void OnEnable()
@@ -68,6 +85,11 @@ public class SeasonalTree : MonoBehaviour
 
         if (canopyRenderer != null)
             canopyRenderer.sortingOrder = order + CanopySortBoost;
+
+        // Sombra do artist fica logo atrás do tronco no mesmo pé da árvore.
+        Transform sombra = transform.Find("Sombra");
+        if (sombra != null && sombra.TryGetComponent(out SpriteRenderer sombraRenderer))
+            sombraRenderer.sortingOrder = order - 1;
     }
 
     private void OnClockChanged()
@@ -276,8 +298,9 @@ public class SeasonalTree : MonoBehaviour
             trunkCollider = gameObject.AddComponent<BoxCollider2D>();
 
         Bounds bounds = sprite.bounds;
-        float width = Mathf.Clamp(bounds.size.x * 0.42f, 0.18f, 0.85f);
-        float height = Mathf.Clamp(bounds.size.y * BaseHeightFraction * 0.45f, 0.1f, 0.32f);
+        // Escala com o sprite (árvores grandes da cena ~20u) sem engolir a área das folhas.
+        float width = Mathf.Clamp(bounds.size.x * 0.22f, 0.18f, Mathf.Max(0.85f, bounds.size.x * 0.12f));
+        float height = Mathf.Clamp(bounds.size.y * BaseHeightFraction * 0.28f, 0.12f, Mathf.Max(0.35f, bounds.size.y * 0.07f));
 
         trunkCollider.isTrigger = false;
         trunkCollider.size = new Vector2(width, height);

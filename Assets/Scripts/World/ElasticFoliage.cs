@@ -11,7 +11,7 @@ using UnityEngine.Rendering;
 public class ElasticFoliage : MonoBehaviour
 {
     private const float BaseHeightFraction = 0.36f;
-    private const int CanopySortBoost = 5000;
+    private const int CanopySortBoost = 1;
 
     private static Shader clipShader;
 

@@ -56,6 +56,7 @@ public static class WorldDepthOcclusionSetup
             active = EditorSceneManager.OpenScene(SampleScenePath, OpenSceneMode.Single);
         }
 
+        int trees = TreeDepthSplitBootstrap.ApplyAll();
         int props = PropDepthSplitBootstrap.ApplyAll();
         int maps = ApplyConstructionSplits();
 
@@ -65,7 +66,7 @@ public static class WorldDepthOcclusionSetup
             EditorSceneManager.SaveScene(active);
         }
 
-        Debug.Log($"Prisma: Depth occlusion — props={props}, construções={maps}.");
+        Debug.Log($"Prisma: Depth occlusion — árvores={trees}, props={props}, construções={maps}.");
         return true;
     }
 
