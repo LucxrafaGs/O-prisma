@@ -84,6 +84,10 @@ public class SoundsOfTheWorld : MonoBehaviour
     [SerializeField] private AudioClip[] echoClips;
     [SerializeField] private Vector2 echoVolume = new(0.45f, 0.85f);
     [SerializeField] private Vector2 echoPitch = new(0.85f, 1.1f);
+    [Tooltip("Sussurro bem baixo ocasional quando o eco NÃO está na tela.")]
+    [SerializeField] private Vector2 quietAmbientWhisperInterval = new(40f, 95f);
+    [SerializeField] [Range(0f, 1f)] private float quietAmbientWhisperChance = 0.22f;
+    [SerializeField] private Vector2 quietAmbientWhisperVolume = new(0.04f, 0.12f);
 
     private AudioSource sfxSource;
     private AudioSource thunderSource;
@@ -95,10 +99,18 @@ public class SoundsOfTheWorld : MonoBehaviour
     private Coroutine[] randomRoutines;
     private Coroutine musicRoutine;
     private Coroutine rainFadeRoutine;
+    private Coroutine quietWhisperRoutine;
     private bool rainAudioActive;
     private bool wasRaining;
     private float footstepTimer;
     private PlayerController player;
+
+    private bool echoSequenceActive;
+    private bool worldMutedForEcho;
+    private float savedMusicVolume;
+    private float savedRainVolume;
+    private AudioClip whisperLoopClip;
+    private float whisperTargetVolume;
 
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
     private static void Bootstrap()
@@ -160,10 +172,11 @@ public class SoundsOfTheWorld : MonoBehaviour
         WorldAudioEvents.Thunder += OnThunder;
         WorldAudioEvents.RainStarted += OnRainStarted;
         WorldAudioEvents.RainStopped += OnRainStopped;
-        WorldAudioEvents.EchoAppeared += OnEchoAppeared;
         StartRandomChannels();
         if (musicStartsOnAwake)
             RestartMusicCycle();
+        if (quietWhisperRoutine == null)
+            quietWhisperRoutine = StartCoroutine(QuietAmbientWhisperLoop());
     }
 
     private void OnDisable()
@@ -171,11 +184,17 @@ public class SoundsOfTheWorld : MonoBehaviour
         WorldAudioEvents.Thunder -= OnThunder;
         WorldAudioEvents.RainStarted -= OnRainStarted;
         WorldAudioEvents.RainStopped -= OnRainStopped;
-        WorldAudioEvents.EchoAppeared -= OnEchoAppeared;
+        if (worldMutedForEcho)
+        {
+            worldMutedForEcho = false;
+            AudioListener.pause = false;
+        }
+
         StopAllCoroutines();
         randomRoutines = null;
         musicRoutine = null;
         rainFadeRoutine = null;
+        quietWhisperRoutine = null;
     }
 
     private void OnDestroy()
@@ -194,6 +213,7 @@ public class SoundsOfTheWorld : MonoBehaviour
     {
         UpdateFootsteps();
         PollRainState();
+        UpdateWhisperLoop();
     }
 
     private void EnsureSources()
@@ -259,8 +279,11 @@ public class SoundsOfTheWorld : MonoBehaviour
             if (Random.value > channel.playChance)
                 continue;
 
+            if (worldMutedForEcho)
+                continue;
+
             AudioClip clip = Pick(channel.clips);
-            if (clip == null)
+            if (clip == null || IsEchoClip(clip))
                 continue;
 
             float volume = Random.Range(channel.volumeRange.x, channel.volumeRange.y);
@@ -269,22 +292,192 @@ public class SoundsOfTheWorld : MonoBehaviour
         }
     }
 
-    private void OnEchoAppeared()
+    /// <summary>Eco entrou em cena — inicia sussurro controlado pela proximidade.</summary>
+    public void NotifyEchoSequenceStarted()
     {
-        if (echoClips == null || echoClips.Length == 0 || echoSource == null)
+        echoSequenceActive = true;
+        BeginEchoWhisper();
+    }
+
+    public void NotifyEchoSequenceEnded()
+    {
+        echoSequenceActive = false;
+        StopEchoWhisper();
+    }
+
+    public void BeginEchoWhisper()
+    {
+        if (echoSource == null)
             return;
 
-        AudioClip clip = Pick(echoClips);
+        whisperLoopClip = FindWhisperClip();
+        if (whisperLoopClip == null)
+            return;
+
+        echoSource.Stop();
+        echoSource.clip = whisperLoopClip;
+        echoSource.loop = true;
+        echoSource.pitch = Random.Range(echoPitch.x, echoPitch.y);
+        echoSource.volume = 0.05f;
+        whisperTargetVolume = 0.05f;
+        echoSource.Play();
+    }
+
+    public void SetEchoWhisperVolume(float volume01)
+    {
+        whisperTargetVolume = Mathf.Clamp01(volume01);
+        if (echoSource == null)
+            return;
+
+        if (!echoSource.isPlaying && whisperLoopClip != null && echoSequenceActive && !worldMutedForEcho)
+        {
+            echoSource.clip = whisperLoopClip;
+            echoSource.loop = true;
+            echoSource.Play();
+        }
+    }
+
+    public void StopEchoWhisper()
+    {
+        whisperTargetVolume = 0f;
+        if (echoSource == null)
+            return;
+
+        echoSource.Stop();
+        echoSource.loop = false;
+        echoSource.clip = null;
+        echoSource.volume = 0f;
+    }
+
+    /// <summary>Corta música, chuva, SFX, passos e sussurro (eco parado na frente).</summary>
+    public void MuteWorldForEcho()
+    {
+        if (worldMutedForEcho)
+            return;
+
+        worldMutedForEcho = true;
+        StopEchoWhisper();
+
+        if (musicSource != null)
+            savedMusicVolume = musicSource.volume;
+
+        if (rainSource != null)
+            savedRainVolume = rainSource.volume > 0.01f ? rainSource.volume : rainVolume;
+
+        // Silêncio total do jogo (inclui chuva, música e qualquer outro AudioSource).
+        AudioListener.pause = true;
+    }
+
+    /// <summary>Restaura áudio do mundo; opcionalmente dispara trovão forte.</summary>
+    public void RestoreWorldAfterEcho(bool withThunder)
+    {
+        worldMutedForEcho = false;
+        AudioListener.pause = false;
+
+        if (musicSource != null && savedMusicVolume > 0.01f)
+            musicSource.volume = savedMusicVolume;
+
+        if (rainSource != null && savedRainVolume > 0.01f)
+            rainSource.volume = savedRainVolume;
+
+        if (withThunder)
+            WorldAudioEvents.NotifyThunder(true);
+    }
+
+    private void UpdateWhisperLoop()
+    {
+        if (echoSource == null || worldMutedForEcho || !echoSequenceActive)
+            return;
+        if (!echoSource.isPlaying)
+            return;
+
+        echoSource.volume = Mathf.MoveTowards(
+            echoSource.volume, whisperTargetVolume, Time.deltaTime * 1.8f);
+    }
+
+    private IEnumerator QuietAmbientWhisperLoop()
+    {
+        yield return new WaitForSeconds(Random.Range(12f, 28f));
+
+        while (enabled)
+        {
+            float wait = Random.Range(
+                Mathf.Max(15f, quietAmbientWhisperInterval.x),
+                Mathf.Max(quietAmbientWhisperInterval.x, quietAmbientWhisperInterval.y));
+            yield return new WaitForSeconds(wait);
+
+            if (echoSequenceActive || worldMutedForEcho)
+                continue;
+            if (Random.value > quietAmbientWhisperChance)
+                continue;
+
+            AudioClip clip = FindWhisperClip();
+            if (clip == null || echoSource == null)
+                continue;
+
+            float volume = Random.Range(quietAmbientWhisperVolume.x, quietAmbientWhisperVolume.y);
+            float pitch = Random.Range(echoPitch.x, echoPitch.y);
+            PlayOneShot(echoSource, clip, volume, pitch);
+        }
+    }
+
+    private AudioClip FindWhisperClip()
+    {
+        AudioClip fromEcho = Pick(echoClips);
+        if (fromEcho != null)
+            return fromEcho;
+
+        if (randomChannels == null)
+            return null;
+
+        for (int i = 0; i < randomChannels.Length; i++)
+        {
+            AudioClip[] clips = randomChannels[i]?.clips;
+            if (clips == null)
+                continue;
+
+            for (int j = 0; j < clips.Length; j++)
+            {
+                AudioClip clip = clips[j];
+                if (clip != null && IsWhisperNamed(clip))
+                    return clip;
+            }
+        }
+
+        return null;
+    }
+
+    private bool IsEchoClip(AudioClip clip)
+    {
         if (clip == null)
-            return;
+            return false;
 
-        float volume = Random.Range(echoVolume.x, echoVolume.y);
-        float pitch = Random.Range(echoPitch.x, echoPitch.y);
-        PlayOneShot(echoSource, clip, volume, pitch);
+        if (echoClips != null)
+        {
+            for (int i = 0; i < echoClips.Length; i++)
+            {
+                if (echoClips[i] == clip)
+                    return true;
+            }
+        }
+
+        return IsWhisperNamed(clip);
+    }
+
+    private static bool IsWhisperNamed(AudioClip clip)
+    {
+        if (clip == null)
+            return false;
+
+        string n = clip.name;
+        return n.IndexOf("sussurro", System.StringComparison.OrdinalIgnoreCase) >= 0
+               || n.IndexOf("whisper", System.StringComparison.OrdinalIgnoreCase) >= 0;
     }
 
     private void OnThunder(bool strong)
     {
+        if (worldMutedForEcho)
+            return;
         if (thunderClips == null || thunderClips.Length == 0)
             return;
 
@@ -417,6 +610,8 @@ public class SoundsOfTheWorld : MonoBehaviour
 
     private void UpdateFootsteps()
     {
+        if (worldMutedForEcho)
+            return;
         if (footstepClips == null || footstepClips.Length == 0 || footstepSource == null)
             return;
 

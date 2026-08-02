@@ -2,7 +2,7 @@ using UnityEngine;
 using UnityEngine.SceneManagement;
 
 /// <summary>
-/// Spawna o eco (silhueta preta bugada) perto do player em intervalos aleatórios.
+/// Spawna o eco (silhueta preta animada) perto do player em intervalos aleatórios.
 /// </summary>
 [DefaultExecutionOrder(-4)]
 public class EchoApparitionSystem : MonoBehaviour
@@ -13,7 +13,6 @@ public class EchoApparitionSystem : MonoBehaviour
     [SerializeField] private bool enabledSpawn = true;
     [SerializeField] private Vector2 spawnIntervalSeconds = new(28f, 75f);
     [SerializeField] [Range(0f, 1f)] private float spawnChance = 0.55f;
-    [SerializeField] private Vector2 lifetimeSeconds = new(2.2f, 5.5f);
     [SerializeField] private bool allowDuringRain = true;
 
     private float nextSpawnAt;
@@ -90,9 +89,7 @@ public class EchoApparitionSystem : MonoBehaviour
         if (player == null)
             return;
 
-        EchoApparition.Behavior behavior = (EchoApparition.Behavior)Random.Range(0, 3);
-        float life = Random.Range(lifetimeSeconds.x, lifetimeSeconds.y);
-        active = EchoApparition.Spawn(player.transform, behavior, life);
+        active = EchoApparition.Spawn(player.transform);
     }
 
     private void ScheduleNext()

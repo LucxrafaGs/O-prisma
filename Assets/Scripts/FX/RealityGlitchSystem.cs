@@ -29,6 +29,10 @@ public class RealityGlitchSystem : MonoBehaviour
     private RawImage overlayImage;
     private Coroutine running;
     private bool capturing;
+    private Transform followTarget;
+    private bool followActive;
+    private float followIntensity = 0.75f;
+    private GlitchKind followKind = GlitchKind.GlassBubble;
 
     private static readonly Color Purple = new(0.45f, 0.05f, 0.72f, 1f);
     private static readonly Color Black = new(0.02f, 0f, 0.05f, 1f);
@@ -74,7 +78,84 @@ public class RealityGlitchSystem : MonoBehaviour
         cam.targetTexture = prev;
 
         if (glitchMaterial != null)
+        {
             glitchMaterial.SetFloat("_TimeSeed", Time.unscaledTime);
+            if (followActive && followTarget != null)
+            {
+                Vector2 bubble = WorldToViewport(followTarget.position);
+                glitchMaterial.SetVector("_BubbleCenter", new Vector4(bubble.x, bubble.y, 0f, 0f));
+                float pulse = followIntensity * (0.85f + 0.15f * Mathf.Sin(Time.unscaledTime * 9f));
+                if (Random.value > 0.94f)
+                    pulse *= Random.Range(0.55f, 1.25f);
+                glitchMaterial.SetFloat("_Intensity", pulse);
+            }
+        }
+    }
+
+    /// <summary>Glitch de bolha/vortex acompanhando um transform (eco).</summary>
+    public void BeginFollow(Transform target, GlitchKind kind = GlitchKind.GlassBubble, float intensity = 0.8f)
+    {
+        if (target == null)
+            return;
+
+        if (running != null)
+        {
+            StopCoroutine(running);
+            running = null;
+        }
+
+        EnsureResources();
+        EnsureRt();
+        if (glitchMaterial == null || overlayImage == null)
+            return;
+
+        followTarget = target;
+        followActive = true;
+        followKind = kind;
+        followIntensity = Mathf.Clamp01(intensity);
+
+        Vector2 bubble = WorldToViewport(target.position);
+        glitchMaterial.SetFloat("_Mode", (float)kind);
+        glitchMaterial.SetVector("_BubbleCenter", new Vector4(bubble.x, bubble.y, 0f, 0f));
+        glitchMaterial.SetFloat("_BubbleRadius", Random.Range(0.22f, 0.34f));
+        glitchMaterial.SetColor("_Purple", Purple);
+        glitchMaterial.SetColor("_Black", Black);
+        glitchMaterial.SetFloat("_Intensity", followIntensity);
+
+        overlayImage.texture = captureRt;
+        overlayImage.material = glitchMaterial;
+        overlayImage.enabled = true;
+        capturing = true;
+    }
+
+    public void SetFollowIntensity(float intensity)
+    {
+        followIntensity = Mathf.Clamp01(intensity);
+    }
+
+    public void EndFollow()
+    {
+        followActive = false;
+        followTarget = null;
+        capturing = false;
+        if (overlayImage != null)
+        {
+            overlayImage.enabled = false;
+            overlayImage.texture = null;
+        }
+
+        if (glitchMaterial != null)
+            glitchMaterial.SetFloat("_Intensity", 0f);
+    }
+
+    private Vector2 WorldToViewport(Vector3 world)
+    {
+        Camera cam = Camera.main;
+        if (cam == null)
+            return RandomBubbleCenter();
+
+        Vector3 sp = cam.WorldToViewportPoint(world);
+        return new Vector2(Mathf.Clamp01(sp.x), Mathf.Clamp01(sp.y));
     }
 
     /// <summary>Dev: dispara as 5+ variações em sequência.</summary>
@@ -87,6 +168,8 @@ public class RealityGlitchSystem : MonoBehaviour
 
     public void Play(GlitchKind kind, float duration = 1.4f, bool nearPlayer = false)
     {
+        followActive = false;
+        followTarget = null;
         if (running != null)
             StopCoroutine(running);
         running = StartCoroutine(PlayOne(kind, duration, nearPlayer));
