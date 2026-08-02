@@ -4,8 +4,8 @@ using UnityEngine;
 using UnityEngine.Rendering;
 
 /// <summary>
-/// Eco: silhueta preta do personagem (sprites reais), glitch seguindo,
-/// abordagem → silêncio total → carga rápida com trovão.
+/// Eco: NPC comum (mesmos sprites) todo preto, anda ou corre até o jogador,
+/// para em silêncio e depois carrega. Sem distorção de tela.
 /// </summary>
 [DisallowMultipleComponent]
 public class EchoApparition : MonoBehaviour
@@ -13,8 +13,7 @@ public class EchoApparition : MonoBehaviour
     public enum ApproachStyle
     {
         Walk = 0,
-        Slide = 1,
-        WalkThenSlide = 2
+        Run = 1
     }
 
     private PlayerAppearance appearance;
@@ -22,14 +21,14 @@ public class EchoApparition : MonoBehaviour
     private Transform player;
     private ApproachStyle style;
     private PlayerController.Facing facing = PlayerController.Facing.Down;
-    private float walkFrameDuration = 0.11f;
+    private float walkFrameDuration = 0.12f;
     private int animFrameIndex;
     private float animFrameTimer;
     private bool worldMuted;
     private bool finished;
 
     private const float WalkSpeed = 1.55f;
-    private const float SlideSpeed = 1.1f;
+    private const float RunSpeed = 3.4f;
     private const float ChargeSpeed = 22f;
 
     public static EchoApparition Spawn(Transform playerTransform)
@@ -43,9 +42,10 @@ public class EchoApparition : MonoBehaviour
     private void Setup(Transform playerTransform)
     {
         player = playerTransform;
-        style = (ApproachStyle)Random.Range(0, 3);
+        style = Random.value < 0.45f ? ApproachStyle.Run : ApproachStyle.Walk;
         transform.localScale = CharacterWorldScale.Vector;
 
+        // Mesmo setup visual de um NPC comum.
         appearance = gameObject.AddComponent<PlayerAppearance>();
         appearance.SetApplySavedAppearanceOnAwake(false);
 
@@ -54,7 +54,17 @@ public class EchoApparition : MonoBehaviour
             ? CharacterRandomizer.CreateRandomNpcLook(library)
             : CharacterAppearanceData.Load();
         appearance.ApplyAppearance(look);
-        TintAllBlack();
+        CharacterLitMaterial.ApplyToHierarchy(transform);
+        PaintNpcBlack();
+
+        Rigidbody2D body = gameObject.AddComponent<Rigidbody2D>();
+        body.bodyType = RigidbodyType2D.Kinematic;
+        body.gravityScale = 0f;
+        body.freezeRotation = true;
+        body.interpolation = RigidbodyInterpolation2D.None;
+
+        if (GetComponent<CharacterDepthSort>() == null)
+            gameObject.AddComponent<CharacterDepthSort>();
 
         SortingGroup group = GetComponent<SortingGroup>();
         if (group == null)
@@ -62,72 +72,40 @@ public class EchoApparition : MonoBehaviour
         group.sortingOrder = WorldDepth.ActorOrderMax;
 
         Vector2 stopPoint = PickStopPoint();
-        Vector2 spawnPoint = PickSpawnPoint(stopPoint);
-        transform.position = spawnPoint;
+        transform.position = PickSpawnPoint(stopPoint);
 
-        Vector2 toStop = stopPoint - spawnPoint;
+        Vector2 toStop = stopPoint - (Vector2)transform.position;
         facing = FacingFrom(toStop.sqrMagnitude > 0.01f ? toStop.normalized : Vector2.down);
         appearance.SetFrame(IdleIndex(facing));
 
-        aura = CreateBlackAura(dense: true);
-        RealityGlitchSystem glitch = RealityGlitchSystem.Instance
-            ?? Object.FindAnyObjectByType<RealityGlitchSystem>();
-        if (glitch == null)
-        {
-            GameObject host = new("RealityGlitchSystem");
-            glitch = host.AddComponent<RealityGlitchSystem>();
-        }
-
-        RealityGlitchSystem.GlitchKind kind = Random.value < 0.5f
-            ? RealityGlitchSystem.GlitchKind.GlassBubble
-            : RealityGlitchSystem.GlitchKind.RealityVortex;
-        glitch.BeginFollow(transform, kind, 0.72f);
-
-        SoundsOfTheWorld audio = SoundsOfTheWorld.Instance ?? SoundsOfTheWorld.EnsureInScene();
-        audio?.NotifyEchoSequenceStarted();
+        aura = CreateBlackAura();
+        WorldAudioEvents.NotifyEchoAppeared();
 
         StartCoroutine(RunSequence(stopPoint));
     }
 
     private void OnDestroy()
     {
-        CleanupFx(restoreAudio: worldMuted && !finished);
+        if (worldMuted && !finished)
+            SoundsOfTheWorld.Instance?.RestoreWorldAfterEcho(withThunder: false);
     }
 
-    private void CleanupFx(bool restoreAudio)
+    /// <summary>Mantém material lit do NPC; só escurece a cor (silhueta preta).</summary>
+    private void PaintNpcBlack()
     {
-        RealityGlitchSystem.Instance?.EndFollow();
-        SoundsOfTheWorld audio = SoundsOfTheWorld.Instance;
-        if (audio == null)
-            return;
-
-        audio.StopEchoWhisper();
-        if (restoreAudio)
-            audio.RestoreWorldAfterEcho(withThunder: false);
-        audio.NotifyEchoSequenceEnded();
-    }
-
-    private void TintAllBlack()
-    {
-        Material mat = EchoSilhouetteFactory.GetUnlitMaterial();
         SpriteRenderer[] renderers = GetComponentsInChildren<SpriteRenderer>(true);
         for (int i = 0; i < renderers.Length; i++)
-        {
             renderers[i].color = Color.black;
-            renderers[i].material = mat;
-        }
     }
 
     private Vector2 PickStopPoint()
     {
         Vector2 origin = player != null ? (Vector2)player.position : Vector2.zero;
-        // Parado na frente do player, visível (pode ficar um pouco longe).
         Vector2 offset = Random.insideUnitCircle.normalized;
         if (offset.sqrMagnitude < 0.01f)
             offset = Vector2.down;
         float dist = Random.Range(1.6f, 2.9f);
-        Vector2 point = origin + offset * dist;
-        return ClampToCamera(point, margin: 0.55f);
+        return ClampToCamera(origin + offset * dist, margin: 0.55f);
     }
 
     private Vector2 PickSpawnPoint(Vector2 stopPoint)
@@ -140,7 +118,6 @@ public class EchoApparition : MonoBehaviour
         float halfW = halfH * cam.aspect;
         Vector2 camPos = cam.transform.position;
 
-        // Spawn do lado oposto ao player em relação ao stop, na borda da visão.
         Vector2 away = player != null
             ? (stopPoint - (Vector2)player.position).normalized
             : Vector2.right;
@@ -148,11 +125,9 @@ public class EchoApparition : MonoBehaviour
             away = Vector2.right;
 
         Vector2 spawn = stopPoint + away * Random.Range(2.8f, 4.2f);
-        // Mantém dentro / quase na borda da câmera para o jogador ver.
         spawn.x = Mathf.Clamp(spawn.x, camPos.x - halfW + 0.2f, camPos.x + halfW - 0.2f);
         spawn.y = Mathf.Clamp(spawn.y, camPos.y - halfH + 0.2f, camPos.y + halfH - 0.2f);
 
-        // Se ficou colado no stop, empurra para a borda.
         if (Vector2.Distance(spawn, stopPoint) < 1.2f)
         {
             int edge = Random.Range(0, 4);
@@ -182,7 +157,7 @@ public class EchoApparition : MonoBehaviour
             Mathf.Clamp(world.y, c.y - halfH, c.y + halfH));
     }
 
-    private ParticleSystem CreateBlackAura(bool dense)
+    private ParticleSystem CreateBlackAura()
     {
         GameObject go = new("EchoAura");
         go.transform.SetParent(transform, false);
@@ -195,12 +170,12 @@ public class EchoApparition : MonoBehaviour
         main.startSpeed = new ParticleSystem.MinMaxCurve(0.2f, 0.85f);
         main.startSize = new ParticleSystem.MinMaxCurve(0.03f, 0.14f);
         main.startColor = new Color(0f, 0f, 0f, 0.9f);
-        main.maxParticles = dense ? 160 : 80;
+        main.maxParticles = 160;
         main.simulationSpace = ParticleSystemSimulationSpace.World;
         main.gravityModifier = 0f;
 
         var emission = ps.emission;
-        emission.rateOverTime = dense ? 55f : 28f;
+        emission.rateOverTime = 55f;
 
         var shape = ps.shape;
         shape.enabled = true;
@@ -229,22 +204,17 @@ public class EchoApparition : MonoBehaviour
 
     private IEnumerator RunSequence(Vector2 stopPoint)
     {
-        // Abordagem: anda / desliza / anda e desliza, sussurro sobe com proximidade.
         yield return Approach(stopPoint);
 
-        // Para na frente do player — silêncio total (música, chuva, sussurro…).
         appearance.SetFrame(IdleIndex(facing));
-        SoundsOfTheWorld.Instance?.StopEchoWhisper();
         SoundsOfTheWorld.Instance?.MuteWorldForEcho();
         worldMuted = true;
-        RealityGlitchSystem.Instance?.SetFollowIntensity(0.95f);
 
         float hold = Random.Range(1.1f, 2.1f);
         float held = 0f;
         while (held < hold)
         {
             held += Time.deltaTime;
-            // Olha para o player enquanto parado.
             if (player != null)
             {
                 Vector2 toPlayer = (Vector2)player.position - (Vector2)transform.position;
@@ -258,54 +228,28 @@ public class EchoApparition : MonoBehaviour
             yield return null;
         }
 
-        // Trovão + sons voltam + carga mega rápida.
         SoundsOfTheWorld.Instance?.RestoreWorldAfterEcho(withThunder: true);
         worldMuted = false;
-        RealityGlitchSystem.Instance?.SetFollowIntensity(1f);
         BoostParticles();
 
         yield return ChargeAtPlayer();
 
         finished = true;
-        CleanupFx(restoreAudio: false);
         Destroy(gameObject);
     }
 
     private IEnumerator Approach(Vector2 stopPoint)
     {
-        Vector2 start = transform.position;
-        float totalDist = Mathf.Max(0.01f, Vector2.Distance(start, stopPoint));
-        float slideAfter = style == ApproachStyle.WalkThenSlide
-            ? Random.Range(0.35f, 0.65f)
-            : (style == ApproachStyle.Slide ? 0f : 2f);
+        float speed = style == ApproachStyle.Run ? RunSpeed : WalkSpeed;
+        bool fastAnim = style == ApproachStyle.Run;
 
         while (Vector2.Distance(transform.position, stopPoint) > 0.08f)
         {
-            float progress = 1f - Vector2.Distance(transform.position, stopPoint) / totalDist;
-            UpdateWhisperProximity();
-
             Vector2 to = stopPoint - (Vector2)transform.position;
-            Vector2 dir = to.normalized;
-            facing = FacingFrom(dir);
-
-            bool sliding = style == ApproachStyle.Slide
-                || (style == ApproachStyle.WalkThenSlide && progress >= slideAfter);
-
-            float speed = sliding ? SlideSpeed : WalkSpeed;
+            facing = FacingFrom(to.normalized);
             transform.position = Vector3.MoveTowards(
                 transform.position, stopPoint, speed * Time.deltaTime);
-
-            if (sliding)
-                appearance.SetFrame(IdleIndex(facing));
-            else
-                TickWalkAnim();
-
-            float distToPlayer = player != null
-                ? Vector2.Distance(transform.position, player.position)
-                : 3f;
-            float intensity = Mathf.Lerp(0.55f, 0.95f, 1f - Mathf.Clamp01(distToPlayer / 5f));
-            RealityGlitchSystem.Instance?.SetFollowIntensity(intensity);
-
+            TickWalkAnim(fastAnim);
             yield return null;
         }
 
@@ -315,13 +259,12 @@ public class EchoApparition : MonoBehaviour
     private IEnumerator ChargeAtPlayer()
     {
         Vector2 target = player != null ? (Vector2)player.position : (Vector2)transform.position;
-        Vector2 dir = (target - (Vector2)transform.position);
+        Vector2 dir = target - (Vector2)transform.position;
         if (dir.sqrMagnitude < 0.01f)
             dir = Vector2.down;
         dir.Normalize();
         facing = FacingFrom(dir);
 
-        // Continua além do player.
         Vector2 end = target + dir * 5.5f;
         float maxTime = 1.4f;
         float t = 0f;
@@ -346,21 +289,9 @@ public class EchoApparition : MonoBehaviour
         }
     }
 
-    private void UpdateWhisperProximity()
-    {
-        SoundsOfTheWorld audio = SoundsOfTheWorld.Instance;
-        if (audio == null || player == null)
-            return;
-
-        float dist = Vector2.Distance(transform.position, player.position);
-        // Longe ~0.05, perto ~0.85
-        float volume = Mathf.Lerp(0.82f, 0.06f, Mathf.Clamp01(dist / 6.5f));
-        audio.SetEchoWhisperVolume(volume);
-    }
-
     private void TickWalkAnim(bool fast = false)
     {
-        float dur = fast ? walkFrameDuration * 0.45f : walkFrameDuration;
+        float dur = fast ? walkFrameDuration * 0.55f : walkFrameDuration;
         animFrameTimer += Time.deltaTime;
         if (animFrameTimer < dur)
             return;
@@ -368,6 +299,7 @@ public class EchoApparition : MonoBehaviour
         animFrameTimer -= dur;
         animFrameIndex = (animFrameIndex + 1) % 6;
         appearance.SetFrame(WalkIndex(facing, animFrameIndex));
+        PaintNpcBlack();
     }
 
     private void BoostParticles()
@@ -410,35 +342,16 @@ public class EchoApparition : MonoBehaviour
     }
 }
 
-/// <summary>Materiais pretos gerados em runtime para o eco / partículas.</summary>
+/// <summary>Material de partículas pretas do eco (corpo usa sprites lit do NPC).</summary>
 public static class EchoSilhouetteFactory
 {
-    private static Material unlitMaterial;
     private static Material particleMaterial;
     private static Texture2D particleTex;
 
     public static void ClearForDomainReload()
     {
-        unlitMaterial = null;
         particleMaterial = null;
         particleTex = null;
-    }
-
-    public static Material GetUnlitMaterial()
-    {
-        if (unlitMaterial != null)
-            return unlitMaterial;
-
-        Shader shader = Shader.Find("Universal Render Pipeline/2D/Sprite-Unlit-Default");
-        if (shader == null)
-            shader = Shader.Find("Sprites/Default");
-        unlitMaterial = new Material(shader)
-        {
-            name = "EchoUnlit",
-            color = Color.black,
-            hideFlags = HideFlags.HideAndDontSave
-        };
-        return unlitMaterial;
     }
 
     public static Material GetParticleMaterial()

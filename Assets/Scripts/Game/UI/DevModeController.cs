@@ -146,7 +146,6 @@ public class DevModeController : MonoBehaviour
         CreateAction(panel, rainButtonLabel, ToggleRain);
         CreateAction(panel, fogButtonLabel, ToggleFog);
         CreateAction(panel, "Disparar trovao", TriggerThunder);
-        CreateAction(panel, "Disparar glitches", TriggerGlitches);
         CreateAction(panel, "Chamar Echo", TriggerEcho);
         CreateAction(panel, colliderDebugButtonLabel, ToggleColliderDebug);
         CreateAction(panel, "Fechar (F2)", () => SetOpen(false));
@@ -208,16 +207,6 @@ public class DevModeController : MonoBehaviour
             director = gameObject.AddComponent<WeatherDirector>();
 
         director.DevTriggerThunder();
-        RefreshStatus();
-    }
-
-    private void TriggerGlitches()
-    {
-        RealityGlitchSystem glitch = RealityGlitchSystem.Instance ?? FindAnyObjectByType<RealityGlitchSystem>();
-        if (glitch == null)
-            glitch = gameObject.AddComponent<RealityGlitchSystem>();
-
-        glitch.DevFireShowcase();
         RefreshStatus();
     }
 
