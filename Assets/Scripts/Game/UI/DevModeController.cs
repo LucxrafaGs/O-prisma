@@ -147,6 +147,7 @@ public class DevModeController : MonoBehaviour
         CreateAction(panel, fogButtonLabel, ToggleFog);
         CreateAction(panel, "Disparar trovao", TriggerThunder);
         CreateAction(panel, "Disparar glitches", TriggerGlitches);
+        CreateAction(panel, "Chamar Echo", TriggerEcho);
         CreateAction(panel, colliderDebugButtonLabel, ToggleColliderDebug);
         CreateAction(panel, "Fechar (F2)", () => SetOpen(false));
 
@@ -217,6 +218,20 @@ public class DevModeController : MonoBehaviour
             glitch = gameObject.AddComponent<RealityGlitchSystem>();
 
         glitch.DevFireShowcase();
+        RefreshStatus();
+    }
+
+    private void TriggerEcho()
+    {
+        EchoApparitionSystem echo = EchoApparitionSystem.Instance
+            ?? FindAnyObjectByType<EchoApparitionSystem>();
+        if (echo == null)
+        {
+            GameObject host = new("EchoApparitionSystem");
+            echo = host.AddComponent<EchoApparitionSystem>();
+        }
+
+        echo.ForceSpawn();
         RefreshStatus();
     }
 
