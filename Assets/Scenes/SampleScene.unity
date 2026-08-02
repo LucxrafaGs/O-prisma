@@ -26967,7 +26967,8 @@ MonoBehaviour:
   randomChannels:
   - name: Ambiente
     enabled: 1
-    clips: []
+    clips:
+    - {fileID: 8300000, guid: 46869de9ce0286e48a48f5edae3991b0, type: 3}
     intervalSeconds: {x: 12, y: 35}
     playChance: 0.7
     volumeRange: {x: 0.35, y: 0.7}
@@ -26979,15 +26980,23 @@ MonoBehaviour:
     playChance: 0.55
     volumeRange: {x: 0.35, y: 0.7}
     pitchRange: {x: 0.92, y: 1.08}
-  thunderClips: []
+  thunderClips:
+  - {fileID: 8300000, guid: 6265f2c49f164ae45ab607a0117be368, type: 3}
+  - {fileID: 8300000, guid: b1e589f41d0d9104ab476d480618568e, type: 3}
+  - {fileID: 8300000, guid: 6dd26e18b966fdc4599cd4d9bb696d12, type: 3}
+  - {fileID: 8300000, guid: 2f3c3922c6ffacd4bb3bd09b229fe243, type: 3}
   thunderVolume: {x: 0.7, y: 1}
   thunderPitch: {x: 0.9, y: 1.05}
   thunderDelayMin: 0
   thunderDelayMax: 0.35
-  rainLoopClips: []
+  rainLoopClips:
+  - {fileID: 8300000, guid: b5e6f97b496154f4a9d04e454bec96c6, type: 3}
   rainVolume: 0.55
   rainFadeSeconds: 2.5
-  musicClips: []
+  musicClips:
+  - {fileID: 8300000, guid: 2f749a6452a3bc546b6f174f5734d1b5, type: 3}
+  - {fileID: 8300000, guid: cba2227463566514983eea15a7b6d827, type: 3}
+  - {fileID: 8300000, guid: b8eb7325929acd841bd688baac44a2af, type: 3}
   musicVolume: 0.4
   musicPlaySeconds: {x: 45, y: 120}
   musicSilenceSeconds: {x: 15, y: 60}
@@ -26997,6 +27006,10 @@ MonoBehaviour:
   footstepPitch: {x: 0.92, y: 1.08}
   footstepIntervalWalk: 0.38
   footstepIntervalRun: 0.26
+  echoClips:
+  - {fileID: 8300000, guid: 46869de9ce0286e48a48f5edae3991b0, type: 3}
+  echoVolume: {x: 0.45, y: 0.85}
+  echoPitch: {x: 0.85, y: 1.1}
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0
