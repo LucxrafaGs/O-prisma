@@ -2,7 +2,7 @@ using UnityEngine;
 using UnityEngine.Rendering;
 
 /// <summary>
-/// Y-sort do personagem com order 10–19 (acima das estátuas em Order 9).
+/// Y-sort do personagem (0–19), mesma faixa das árvores — passa sob as copas.
 /// </summary>
 [DisallowMultipleComponent]
 [RequireComponent(typeof(SortingGroup))]

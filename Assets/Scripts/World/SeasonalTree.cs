@@ -93,7 +93,7 @@ public class SeasonalTree : MonoBehaviour
         // Topo do tronco: player ainda no tronco/sombra fica NA FRENTE da árvore inteira
         // (base + folhas no mesmo order). Só atrás ao cruzar o tronco para o norte.
         float sortY = GetTrunkTopWorldY();
-        int treeOrder = WorldDepth.TreeOrderFromY(sortY);
+        int treeOrder = WorldDepth.ActorOrderFromY(sortY);
         int shadowOrder = WorldDepth.ShadowOrderFromY(sortY);
 
         if (baseRenderer != null)

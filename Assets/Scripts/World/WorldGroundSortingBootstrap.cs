@@ -52,7 +52,7 @@ public static class WorldGroundSortingBootstrap
         if (restored > 0)
             Debug.Log($"Prisma: {restored} tilemaps restaurados para Sorting Layer Default (mapa visível + lit).");
         if (statuesFixed > 0)
-            Debug.Log($"Prisma: {statuesFixed} tilemaps de estátuas (Colider) Order={WorldDepth.StatueOrder} (arvores < estatuas < player).");
+            Debug.Log($"Prisma: {statuesFixed} tilemaps de estatuas (Colider) Order={WorldDepth.StatueOrder}.");
     }
 
     private static bool IsStatueTilemap(string name)

@@ -3,32 +3,37 @@ using UnityEngine.InputSystem;
 using UnityEngine.Rendering.Universal;
 
 /// <summary>
-/// Lanterna: cone direcionado + halo suave ao redor do player (luz se dispersando).
+/// Lanterna: cone + halo. Origem forçada na mão (ignora offsets serializados antigos).
+/// De costas, o ponto fica baixo/atrás do torso para não ficar por cima da cabeça.
 /// </summary>
 [DisallowMultipleComponent]
 public class PlayerFlashlight : MonoBehaviour
 {
     public const string LanternItemId = "lanterna";
 
+    // Locais (pivot nos pés). Valores baixos e colados no corpo — não usar SerializeField
+    // para o Unity não manter offsets antigos altos no componente da cena.
+    private static readonly Vector2 HandLeft = new(-0.04f, 0.035f);
+    private static readonly Vector2 HandRight = new(0.04f, 0.035f);
+    private static readonly Vector2 HandDown = new(0.02f, 0.03f);
+    private static readonly Vector2 HandUp = new(0f, 0.05f);
+
+    /// <summary>Puxa a origem para dentro do corpo (mais perto / para trás).</summary>
+    private const float BackInset = 0.06f;
+
     [Header("Cone (feixe)")]
     [SerializeField] private float outerRadius = 6.5f;
-    [SerializeField] private float innerRadius = 0.35f;
+    [SerializeField] private float innerRadius = 0.25f;
     [SerializeField] private float intensity = 1.45f;
     [SerializeField] private Color lightColor = new(1f, 0.92f, 0.72f, 1f);
     [SerializeField] [Range(10f, 120f)] private float outerSpotAngle = 70f;
     [SerializeField] [Range(5f, 90f)] private float innerSpotAngle = 28f;
 
-    [Header("Halo suave (dispersão no player)")]
-    [SerializeField] private float softOuterRadius = 2.4f;
-    [SerializeField] private float softInnerRadius = 0.2f;
-    [SerializeField] private float softIntensity = 0.55f;
-    [SerializeField] [Range(0.1f, 1f)] private float softFalloff = 0.75f;
-
-    [Header("Mão (local, pivot nos pés)")]
-    [SerializeField] private Vector2 handOffsetLeft = new(-0.12f, 0.05f);
-    [SerializeField] private Vector2 handOffsetRight = new(0.12f, 0.05f);
-    [SerializeField] private Vector2 handOffsetDown = new(0.04f, 0.04f);
-    [SerializeField] private Vector2 handOffsetUp = new(0f, 0.03f);
+    [Header("Halo suave")]
+    [SerializeField] private float softOuterRadius = 2.2f;
+    [SerializeField] private float softInnerRadius = 0.15f;
+    [SerializeField] private float softIntensity = 0.5f;
+    [SerializeField] [Range(0.1f, 1f)] private float softFalloff = 0.78f;
 
     private Light2D spotLight;
     private Light2D softLight;
@@ -89,31 +94,53 @@ public class PlayerFlashlight : MonoBehaviour
             ? player.CurrentFacing
             : PlayerController.Facing.Down;
 
+        Vector2 forward = FacingToDirection(facing);
         Vector2 hand = HandOffset(facing);
-        float z = facing == PlayerController.Facing.Up ? 0.15f : 0f;
-        Vector3 origin = new(hand.x, hand.y, z);
+        // Empurra a origem para trás / para dentro do sprite (mais perto do player).
+        Vector2 origin2 = hand - forward * BackInset;
+
+        // De costas: origem bem baixa no torso para o apex ficar sob o sprite, não na cabeça.
+        if (facing == PlayerController.Facing.Up)
+            origin2 = new Vector2(0f, 0.02f);
 
         lightTransform.localRotation = Quaternion.Euler(0f, 0f, FacingToZRotation(facing));
-        lightTransform.localPosition = origin;
-        spotLight.lightOrder = facing == PlayerController.Facing.Up ? -1 : 0;
+        lightTransform.localPosition = new Vector3(origin2.x, origin2.y, 0f);
+        spotLight.lightOrder = facing == PlayerController.Facing.Up ? -2 : 0;
 
-        // Halo no mesmo ponto de saída — ilumina o player e o chão ao redor com suavidade.
         if (softTransform != null)
         {
-            softTransform.localPosition = origin;
+            // Halo um pouco mais no centro do corpo (ilumina o player).
+            Vector2 softPos = facing == PlayerController.Facing.Up
+                ? new Vector2(0f, 0.04f)
+                : origin2 * 0.5f;
+            softTransform.localPosition = new Vector3(softPos.x, softPos.y, 0f);
             softTransform.localRotation = Quaternion.identity;
+            if (softLight != null)
+                softLight.lightOrder = facing == PlayerController.Facing.Up ? -3 : -1;
         }
     }
 
-    private Vector2 HandOffset(PlayerController.Facing facing)
+    private static Vector2 HandOffset(PlayerController.Facing facing)
     {
         return facing switch
         {
-            PlayerController.Facing.Left => handOffsetLeft,
-            PlayerController.Facing.Right => handOffsetRight,
-            PlayerController.Facing.Up => handOffsetUp,
-            PlayerController.Facing.Down => handOffsetDown,
-            _ => handOffsetDown
+            PlayerController.Facing.Left => HandLeft,
+            PlayerController.Facing.Right => HandRight,
+            PlayerController.Facing.Up => HandUp,
+            PlayerController.Facing.Down => HandDown,
+            _ => HandDown
+        };
+    }
+
+    private static Vector2 FacingToDirection(PlayerController.Facing facing)
+    {
+        return facing switch
+        {
+            PlayerController.Facing.Up => Vector2.up,
+            PlayerController.Facing.Down => Vector2.down,
+            PlayerController.Facing.Left => Vector2.left,
+            PlayerController.Facing.Right => Vector2.right,
+            _ => Vector2.down
         };
     }
 
@@ -183,7 +210,6 @@ public class PlayerFlashlight : MonoBehaviour
 
     private void ConfigureSoft(Light2D light)
     {
-        // 360° — dispersão suave em volta do ponto de saída / player.
         light.lightType = Light2D.LightType.Point;
         light.color = lightColor;
         light.intensity = softIntensity;
@@ -193,13 +219,10 @@ public class PlayerFlashlight : MonoBehaviour
         light.pointLightOuterAngle = 360f;
         light.falloffIntensity = softFalloff;
         light.overlapOperation = Light2D.OverlapOperation.AlphaBlend;
-        light.lightOrder = -2;
+        light.lightOrder = -1;
     }
 }
 
-/// <summary>
-/// Ensures SpriteRenderers use URP 2D lit material so Point Light2D and Global Light affect characters/props.
-/// </summary>
 public static class CharacterLitMaterial
 {
     public static void ApplyToHierarchy(Transform root)
