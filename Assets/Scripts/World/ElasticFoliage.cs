@@ -86,28 +86,9 @@ public class ElasticFoliage : MonoBehaviour
         baseRenderer.sortingOrder = order;
         if (canopyRenderer != null && canopyRenderer.enabled)
         {
-            int foliageId = SortingLayer.NameToID(SeasonalTree.FoliageSortingLayer);
-            bool hasFoliage = false;
-            SortingLayer[] layers = SortingLayer.layers;
-            for (int i = 0; i < layers.Length; i++)
-            {
-                if (layers[i].name == SeasonalTree.FoliageSortingLayer)
-                {
-                    foliageId = layers[i].id;
-                    hasFoliage = true;
-                    break;
-                }
-            }
-
-            if (hasFoliage)
-            {
-                canopyRenderer.sortingLayerID = foliageId;
-                canopyRenderer.sortingOrder = order;
-            }
-            else
-            {
-                canopyRenderer.sortingOrder = order + CanopySortBoost;
-            }
+            // Default layer — sob a neblina; não usar layer Foliage.
+            canopyRenderer.sortingLayerID = baseRenderer.sortingLayerID;
+            canopyRenderer.sortingOrder = order + CanopySortBoost;
         }
     }
 
